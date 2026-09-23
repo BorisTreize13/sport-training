@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1419">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Sport Training</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0f1419; --panel:#171e26; --panel2:#1e2733; --line:#2b3644;
+  --txt:#e6edf3; --dim:#8b9bb0; --accent:#4da3ff;
+  --n0:#f26d6d; --n1:#f2955c; --n2:#f5c542; --n3:#7ed957; --n4:#3ecf8e;
+  --sbw:212px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:14px;line-height:1.4}
+
+/* ============ ossature : sidebar + colonne droite ============ */
+.app{height:100%;display:flex}
+
+.sidebar{width:var(--sbw);flex:0 0 var(--sbw);background:#121820;
+  border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 0}
+.brand{padding:0 16px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.brand h1{font-size:16px;margin:0;font-weight:660;letter-spacing:-.3px}
+.brand .who{color:var(--dim);font-size:10.5px;margin-top:3px;line-height:1.35}
+
+.nav{padding:0 8px;display:flex;flex-direction:column;gap:2px}
+.nav .lab{color:var(--dim);font-size:9.5px;text-transform:uppercase;letter-spacing:.9px;
+  font-weight:650;padding:10px 8px 5px}
+.nav a{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:7px;
+  color:var(--dim);text-decoration:none;font-size:13px;font-weight:550;cursor:pointer;
+  user-select:none;border-left:2px solid transparent}
+.nav a:hover{background:#1a222c;color:var(--txt)}
+.nav a.on{background:#1c2836;color:var(--txt);border-left-color:var(--accent)}
+.nav a .ic{width:16px;text-align:center;font-size:13px;opacity:.85;flex:0 0 16px}
+.nav a.on .ic{opacity:1;color:var(--accent)}
+
+.sfoot{margin-top:auto;padding:12px 16px 0;border-top:1px solid var(--line);
+  font-size:10.5px;color:var(--dim);line-height:1.5}
+.sfoot input{font-size:10px;color:var(--dim);width:100%;margin-top:5px}
+
+.main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+
+/* ============ menu top ============ */
+.topbar{flex:0 0 auto;border-bottom:1px solid var(--line);background:#131a22;
+  display:flex;align-items:center;gap:3px;padding:0 20px;height:44px;overflow-x:auto}
+.topbar .ttl{font-size:13px;font-weight:650;margin-right:16px;white-space:nowrap}
+.tab{padding:6px 13px;cursor:pointer;color:var(--dim);border-radius:6px;
+  font-weight:550;font-size:12.5px;user-select:none;white-space:nowrap}
+.tab:hover{color:var(--txt);background:#1a222c}
+.tab.on{color:var(--accent);background:#17232f}
+
+.body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px 20px 24px}
+.view{display:none}
+.view.on{display:block}
+.sec{display:none}
+.sec.on{display:block}
+
+/* ============ composants ============ */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 14px}
+.card h3{margin:0 0 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--dim);font-weight:650}
+.grid{display:grid;gap:10px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.mb{margin-bottom:12px}
+h2.h{font-size:14px;margin:16px 0 8px;font-weight:620}
+h2.h:first-child{margin-top:0}
+
+.kpi{font-size:23px;font-weight:660;letter-spacing:-.8px;line-height:1.1}
+.kpi small{font-size:12px;font-weight:400;color:var(--dim);letter-spacing:0}
+.note{color:var(--dim);font-size:11.5px;margin-top:4px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase;
+  letter-spacing:.5px;padding:4px 8px;border-bottom:1px solid var(--line)}
+td{padding:4px 8px;border-bottom:1px solid #1d2731;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.name{font-weight:550}
+
+.scale{position:relative;height:16px;display:flex;gap:2px}
+.scale i{flex:1;border-radius:2px;opacity:.30}
+.scale i.act{opacity:1}
+.scale .mk{position:absolute;top:-3px;width:0;height:0;transform:translateX(-5px);
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:6px solid var(--txt)}
+.scale .mkl{position:absolute;bottom:-2px;width:2px;height:20px;background:var(--txt);
+  transform:translateX(-1px);border-radius:1px}
+.lvl{font-size:11px;font-weight:650;white-space:nowrap}
+.lgd{display:flex;gap:12px;font-size:10.5px;color:var(--dim);margin-top:7px;flex-wrap:wrap}
+.lgd span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;
+  margin-right:5px;vertical-align:middle}
+.l0::before{background:var(--n0)}.l1::before{background:var(--n1)}
+.l2::before{background:var(--n2)}.l3::before{background:var(--n3)}.l4::before{background:var(--n4)}
+.dim{color:var(--dim)}
+.acc{color:var(--accent)}
+.pill{display:inline-block;padding:0 7px;border-radius:99px;font-size:10.5px;font-weight:600;
+  background:#243040;color:var(--dim)}
+.pill.b{background:#1d3448;color:var(--accent)}
+
+.seance{background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seance .hd{padding:8px 13px;background:var(--panel2);border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center}
+.seance .nm{font-weight:640;font-size:13px}
+.seance table{font-size:12px}
+ul.li{margin:0;padding-left:16px}
+ul.li li{margin-bottom:5px;font-size:12.5px}
+.rest{display:flex;gap:10px;margin-top:10px}
+.rest .day{flex:1;background:var(--panel);border:1px dashed var(--line);border-radius:9px;
+  padding:8px 13px;color:var(--dim);font-size:12.5px}
+
+/* ============ fiches d'exercice ============ */
+.exgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  display:flex;flex-direction:column}
+.ex .exhd{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--panel2);
+  border-bottom:1px solid var(--line)}
+.ex .no{width:22px;height:22px;flex:0 0 22px;border-radius:6px;background:#1d3448;color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700}
+.ex .exnm{font-weight:640;font-size:13.5px;line-height:1.2}
+.ex .exmu{margin-left:auto;font-size:10px;color:var(--dim);text-align:right;white-space:nowrap}
+.shots{display:flex;gap:1px;background:#0b1016}
+.shot{flex:1;position:relative;background:#fff;aspect-ratio:4/3;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.shot img{width:100%;height:100%;object-fit:contain;display:block}
+.shot .cap{position:absolute;left:0;bottom:0;right:0;padding:2px 6px;font-size:9.5px;
+  background:rgba(10,14,20,.78);color:#dbe6f0;letter-spacing:.3px}
+.shot .ph{color:#93a2b5;font-size:11px;padding:8px;text-align:center}
+.ex .exbd{padding:10px 13px;display:flex;flex-direction:column;gap:8px;flex:1 1 auto}
+.dose{display:flex;gap:6px;flex-wrap:wrap}
+.dose b{background:#1a222c;border:1px solid var(--line);border-radius:6px;padding:2px 8px;
+  font-size:11px;font-weight:600;color:var(--txt)}
+.dose b span{color:var(--dim);font-weight:500}
+.how{font-size:12.5px;line-height:1.45;margin:0}
+.pm{display:flex;flex-direction:column;gap:3px;font-size:11.5px;margin-top:auto}
+.pm div{display:flex;gap:7px}
+.pm .t{flex:0 0 74px;font-weight:650}
+.pm .up .t{color:var(--n1)} .pm .dn .t{color:var(--n4)}
+.credit{padding:5px 13px 9px;font-size:9.5px;color:#6d7c8f;border-top:1px solid #1d2731}
+.credit a{color:#7f8fa3}
+
+.tl{display:flex;flex-direction:column;gap:6px}
+.tl .row{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;padding:8px 12px}
+.tl .dur{flex:0 0 62px;font-weight:680;font-size:13px;font-variant-numeric:tabular-nums}
+.tl .ph{flex:0 0 108px;font-weight:600;font-size:12.5px}
+.tl .ct{font-size:12.5px;color:var(--dim)}
+.tl .row.hi{border-color:#2f4a63;background:#16202b}
+
+.warn{border-left:3px solid var(--n1)}
+.ok{border-left:3px solid var(--n4)}
+
+/* ============ mode séance (live) ============ */
+.livebar{position:sticky;top:-14px;z-index:20;background:#131a22;border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:14px;margin-bottom:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.clock{font-size:27px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px;min-width:92px}
+.clock small{font-size:10px;font-weight:600;color:var(--dim);display:block;letter-spacing:.6px;
+  text-transform:uppercase;margin-bottom:-2px}
+.rtimer{font-size:27px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-1px;min-width:78px}
+.rtimer.run{color:var(--accent)} .rtimer.fin{color:var(--n4)}
+.btn{background:#1d2836;border:1px solid var(--line);color:var(--txt);border-radius:7px;
+  padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:#25344a;border-color:#3a4d66}
+.btn.p{background:#1d3448;border-color:#2f5573;color:var(--accent)}
+.btn.sm{padding:4px 9px;font-size:11px}
+.lbcount{margin-left:auto;text-align:right;font-size:11px;color:var(--dim);line-height:1.4}
+.lbcount b{font-size:17px;color:var(--txt);font-variant-numeric:tabular-nums}
+.pbar{height:4px;background:#1d2731;border-radius:3px;overflow:hidden;margin-top:4px;width:120px}
+.pbar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+
+.blk{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;
+  display:flex;overflow:hidden}
+.blk.done{opacity:.5}
+.blk .tcol{flex:0 0 72px;background:var(--panel2);border-right:1px solid var(--line);
+  padding:11px 8px;text-align:center}
+.blk .t0{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.blk .tdur{font-size:10px;color:var(--dim);margin-top:2px}
+.blk .thumb{flex:0 0 92px;background:#fff;display:flex;align-items:center;justify-content:center;
+  border-right:1px solid var(--line)}
+.blk .thumb img{width:100%;height:100%;max-height:118px;object-fit:contain}
+.blk .mcol{flex:1 1 auto;min-width:0;padding:10px 13px;display:flex;flex-direction:column;gap:7px}
+.blk .bnm{font-size:14px;font-weight:650;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.blk .bnm .kg{background:#1d3448;color:var(--accent);border-radius:6px;padding:1px 9px;
+  font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.blk .meta{font-size:11.5px;color:var(--dim)}
+.blk .cue{font-size:12px;line-height:1.4}
+.sets{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.set{width:30px;height:26px;border:1px solid var(--line);border-radius:6px;background:#1a222c;
+  color:var(--dim);font-size:11.5px;font-weight:700;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;user-select:none;font-family:inherit}
+.set:hover{border-color:#3a4d66;color:var(--txt)}
+.set.ok{background:#17392c;border-color:#2c6b50;color:var(--n4)}
+.sets .lb{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;
+  font-weight:650;margin-right:2px}
+
+/* ============ bouton de lancement ============ */
+.golaunch{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#17293a,#152030);
+  border:1px solid #2f5573;border-radius:11px;padding:13px 16px;margin-bottom:12px;cursor:pointer;width:100%;
+  font-family:inherit;color:var(--txt);text-align:left}
+.golaunch:hover{border-color:#4079a6}
+.golaunch .gl1{font-size:15px;font-weight:680}
+.golaunch .gl2{font-size:11.5px;color:var(--dim);margin-top:2px}
+.golaunch .glgo{margin-left:auto;background:var(--accent);color:#08121c;border-radius:8px;
+  padding:9px 16px;font-size:13px;font-weight:700;white-space:nowrap}
+
+/* ============ mode pas-à-pas (plein écran) ============ */
+.wz{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;
+  flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.wz.on{display:flex}
+.wztop{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:10px 14px 8px}
+.wzx{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;
+  padding:2px 8px;font-family:inherit;line-height:1}
+.wzmeta{font-size:11px;color:var(--dim);line-height:1.3}
+.wzmeta b{color:var(--txt);font-size:13px}
+.wzclk{margin-left:auto;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.6px}
+.wzbar{flex:0 0 auto;height:3px;background:#1d2731;margin:0 14px;border-radius:2px;overflow:hidden}
+.wzbar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+
+.wzbody{flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.wzimg{background:#fff;border-radius:12px;height:clamp(150px,26vh,240px);display:flex;
+  align-items:center;justify-content:center;gap:2px;overflow:hidden;flex:0 0 auto}
+.wzimg img{height:100%;width:100%;object-fit:contain;padding:6px}
+.wzname{font-size:26px;font-weight:720;letter-spacing:-.8px;line-height:1.1}
+.wzsub{font-size:12.5px;color:var(--dim);margin-top:3px}
+.wzstats{display:flex;gap:9px;flex-wrap:wrap}
+.wzstat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 13px;flex:1 1 90px}
+.wzstat .k{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;font-weight:650}
+.wzstat .v{font-size:22px;font-weight:720;letter-spacing:-.7px;font-variant-numeric:tabular-nums;margin-top:1px}
+.wzstat.hi{border-color:#2f5573;background:#17293a}
+.wzstat.hi .v{color:var(--accent)}
+.wzcue{font-size:13.5px;line-height:1.5;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:11px 13px}
+.wzcount{font-size:clamp(64px,20vw,110px);font-weight:750;letter-spacing:-4px;text-align:center;
+  font-variant-numeric:tabular-nums;line-height:1;margin:8px 0;color:var(--accent)}
+.wzcount.fin{color:var(--n4)}
+.wzlbl{text-align:center;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px;font-weight:650}
+.wzedit{display:flex;gap:9px}
+.wzedit label{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 11px;display:block}
+.wzedit .k{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;font-weight:650}
+.wzedit input{width:100%;background:none;border:none;color:var(--txt);font-size:21px;font-weight:700;
+  font-family:inherit;padding:0;outline:none;font-variant-numeric:tabular-nums}
+
+.wznext{flex:0 0 auto;margin:0 14px;padding:9px 13px;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;font-size:12.5px;display:flex;align-items:center;gap:10px}
+.wznext .nl{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;
+  font-weight:650;flex:0 0 auto}
+.wznext .nt{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wznext .nk{margin-left:auto;color:var(--accent);font-weight:700;white-space:nowrap;flex:0 0 auto}
+
+.wzbtns{flex:0 0 auto;display:flex;gap:9px;padding:10px 14px 14px}
+.wzb{border:1px solid var(--line);background:#1d2836;color:var(--txt);border-radius:12px;
+  font-family:inherit;font-size:15px;font-weight:650;cursor:pointer;padding:16px 14px}
+.wzb.big{flex:1 1 auto;background:var(--accent);color:#08121c;border-color:var(--accent);font-size:17px;font-weight:750}
+.wzb.big.g{background:var(--n4);border-color:var(--n4)}
+.wzb.gh{background:none;color:var(--dim)}
+.wzb:active{transform:scale(.985)}
+
+.recap{font-size:12.5px}
+.recap th,.recap td{padding:5px 7px}
+.ta{width:100%;height:150px;background:#0c1219;color:var(--dim);border:1px solid var(--line);
+  border-radius:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;padding:8px;resize:vertical}
+
+/* ============ mobile ============ */
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{flex-direction:column;height:auto;min-height:100%}
+  .sidebar{width:100%;flex:0 0 auto;border-right:none;border-bottom:1px solid var(--line);padding:10px 0 8px}
+  .brand{padding:0 14px 9px}
+  .brand .who{display:none}
+  .nav{flex-direction:row;overflow-x:auto;gap:5px;padding:9px 12px 2px;-webkit-overflow-scrolling:touch}
+  .nav .lab{display:none}
+  .nav a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;border-radius:7px;padding:8px 12px}
+  .nav a.on{border-bottom-color:var(--accent)}
+  .sfoot{margin-top:0;padding:9px 14px 0}
+  .topbar{height:auto;padding:6px 12px;gap:5px}
+  .topbar .ttl{display:none}
+  .tab{padding:8px 13px}
+  .body{overflow:visible;padding:12px 12px 30px}
+  .grid.g4,.grid.g3,.grid.g2{grid-template-columns:1fr}
+  .exgrid{grid-template-columns:1fr}
+  .livebar{position:static;flex-wrap:wrap;gap:9px;box-shadow:none}
+  .lbcount{width:100%;text-align:left;display:flex;align-items:center;gap:10px}
+  .pbar{flex:1 1 auto;width:auto}
+  .blk{flex-wrap:wrap}
+  .blk .tcol{flex:0 0 58px;padding:9px 5px}
+  .blk .thumb{flex:0 0 66px}
+  .blk .mcol{flex:1 1 200px;padding:9px 11px}
+  .set{width:38px;height:36px;font-size:13px}
+  table{font-size:12px}
+  th,td{padding:4px 5px}
+  .rest{flex-direction:column}
+  .tl .row{flex-wrap:wrap}
+  .tl .ph{flex:0 0 auto}
+  .tl .ct{flex:1 1 100%;font-size:11.5px}
+  .card{padding:11px 12px}
+}
+@media (max-width:430px){
+  .wzname{font-size:23px}
+  .wzstat{padding:7px 10px;flex:1 1 74px}
+  .wzstat .v{font-size:19px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Sport Training</h1>
+      <div class="who">H, 40 ans · 79,5 kg · ~30 °C<br>Objectif : silhouette athlétique</div>
+    </div>
+
+    <nav class="nav">
+      <div class="lab">Suivi</div>
+      <a class="on" data-v="etat"><span class="ic">◎</span>État actuel</a>
+      <a data-v="prog"><span class="ic">▤</span>Programme</a>
+      <div class="lab">Séance de la semaine</div>
+      <a data-v="seance"><span class="ic">▶</span>Séance — Full Body</a>
+      <a data-v="sansalle"><span class="ic">◆</span>15 min sans salle</a>
+      <div class="lab">Plus tard (phase 2)</div>
+      <a data-v="jour1"><span class="ic">▤</span>Upper A · 4 séances/sem.</a>
+      <div class="lab">Fond</div>
+      <a data-v="refs"><span class="ic">§</span>Références</a>
+    </nav>
+
+    <div class="sfoot">
+      Carnet de suivi (.xlsx)
+      <input type="file" id="fx" accept=".xlsx"><span id="fxmsg"></span>
+    </div>
+  </aside>
+
+  <!-- ================= COLONNE DROITE ================= -->
+  <div class="main">
+    <div class="topbar" id="topbar"></div>
+    <div class="body" id="body">
+
+    <!-- ========== VUE : ÉTAT ACTUEL ========== -->
+    <div class="view on" id="v-etat">
+
+      <div class="sec on" id="s-etat-resume">
+        <div class="grid g4 mb">
+          <div class="card">
+            <h3>Niveau global</h3>
+            <div class="kpi" id="k-niv">Novice</div>
+            <div class="note">Moyenne des tests réalisés. Reprise après arrêt, pas un point de départ zéro.</div>
+          </div>
+          <div class="card">
+            <h3>Batterie mesurée</h3>
+            <div class="kpi" id="k-mes">2 <small>/ 8 tests</small></div>
+            <div class="note">Six repères manquants : le positionnement reste partiel.</div>
+          </div>
+          <div class="card">
+            <h3>Maillon faible</h3>
+            <div class="kpi" style="font-size:20px">Base aérobie</div>
+            <div class="note">140 bpm à 6 km/h et dérive +10 % : le poste le plus en retard.</div>
+          </div>
+          <div class="card">
+            <h3>Priorité n°1</h3>
+            <div class="kpi" style="font-size:20px">Mesurer</div>
+            <div class="note">1RM (Epley sur 3–8 reps) + Rockport + composition, avant toute programmation fine.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Positionnement — où se situe chaque statistique</h3>
+          <table>
+            <thead><tr>
+              <th style="width:20%">Statistique</th>
+              <th class="num" style="width:9%">Mesuré</th>
+              <th style="width:11%">Niveau</th>
+              <th style="width:32%">Échelle</th>
+              <th class="num" style="width:13%">Palier suivant</th>
+              <th style="width:15%">Repère</th>
+            </tr></thead>
+            <tbody id="tb"></tbody>
+          </table>
+          <div class="lgd">
+            <span class="l0">Très faible</span><span class="l1">Faible</span><span class="l2">Moyen</span>
+            <span class="l3">Bon</span><span class="l4">Excellent</span>
+            <span style="margin-left:auto">Barème H 40–49 ans (ACSM/CSEP, ExRx, StrengthLevel). Objectifs, pas moyennes de débutants.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec" id="s-etat-journal">
+        <h2 class="h">Dernière séance — 16/08/2026</h2>
+        <div class="grid g4 mb">
+          <div class="card"><h3>Durée</h3><div class="kpi">14 <small>min</small></div>
+            <div class="note">17:41 → 17:55, circuit poids du corps.</div></div>
+          <div class="card"><h3>Séries</h3><div class="kpi">10</div>
+            <div class="note">≈ 85 s par cycle série + repos.</div></div>
+          <div class="card"><h3>Nature</h3><div class="kpi" style="font-size:19px">Conditionnement</div>
+            <div class="note">Repos trop courts pour un stimulus d'hypertrophie.</div></div>
+          <div class="card"><h3>Semaine</h3><div class="kpi" style="font-size:19px">S0</div>
+            <div class="note">Préparatoire — le programme démarre le 17/08.</div></div>
+        </div>
+
+        <div class="grid g2">
+          <div class="card"><h3>Répartition des séries</h3>
+            <table><tbody id="tb-rep"></tbody></table>
+            <div class="note">Trou classique du circuit poids du corps : ni poussée verticale,
+              ni charnière de hanche, ni gainage.</div>
+          </div>
+          <div class="card"><h3>Lecture</h3><ul class="li">
+            <li><b>Tractions à l'échec</b> — 3 reps = exactement le max testé le 12/08, donc RIR 0.
+              0–3 RIR suffit (Refalo 2023) ; à 3 reps de marge, l'échec systématique coûte plus qu'il ne rapporte.</li>
+            <li><b>Pompes bien calibrées</b> — 8 puis 7 contre un max de 12 : RIR ≈ 4 sur la première
+              série, 1–2 sur la seconde. Cohérent avec la phase de réathlétisation.</li>
+            <li><b>Asymétrie au pistol squat</b> — 4 complets à droite, 4 avec appui mural à gauche.
+              Le point le plus informatif de la séance : critère de progrès = réduire l'assistance.</li>
+            <li><b>Inverted row = levier vers les tractions</b> — 7 + 5 reps contre 3 tractions.
+              Progression fine impossible sur la traction seule.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="sec" id="s-etat-hist">
+        <div class="card mb"><h3>Séances enregistrées sur cet appareil</h3>
+          <div id="hist"></div>
+          <div class="note">Chaque séance lancée en pas-à-pas est enregistrée automatiquement dans le
+            navigateur de l'appareil, y compris hors connexion.</div>
+        </div>
+
+        <div class="card mb"><h3>Envoi automatique vers le carnet Google Sheets</h3>
+          <p class="how">À la fin de chaque séance, les lignes partent toutes seules dans l'onglet
+          <b>Séances</b> du carnet. Sans réseau, elles attendent dans une file et partent au retour
+          de la connexion.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+            <label style="font-size:11px;color:var(--dim);font-weight:650">Adresse du script (…/exec)
+              <input id="sync-url" type="url" placeholder="https://script.google.com/macros/s/…/exec"
+                style="width:100%;margin-top:3px;background:#0c1219;border:1px solid var(--line);color:var(--txt);
+                border-radius:7px;padding:9px 10px;font-family:inherit;font-size:12.5px;font-weight:400"></label>
+            <label style="font-size:11px;color:var(--dim);font-weight:650">Clé secrète
+              <input id="sync-key" type="text" placeholder="celle choisie dans le script"
+                style="width:100%;margin-top:3px;background:#0c1219;border:1px solid var(--line);color:var(--txt);
+                border-radius:7px;padding:9px 10px;font-family:inherit;font-size:12.5px;font-weight:400"></label>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn p" id="sync-save">Enregistrer</button>
+            <button class="btn" id="sync-now">Envoyer maintenant</button>
+            <span id="syncst"></span>
+          </div>
+          <div class="note">La marche à suivre est dans <b>Mettre-la-seance-sur-le-mobile.md</b>,
+            partie 2. À saisir sur chaque appareil : ces réglages sont locaux.</div>
+        </div>
+
+        <div class="card warn"><h3>Tant que l'envoi n'est pas configuré</h3>
+          <p class="how">L'historique reste stocké dans le navigateur de cet appareil seulement.
+          Vider les données de navigation ou désinstaller le raccourci l'efface, sans sauvegarde ailleurs.</p>
+          <p class="how">Dans ce cas, utilise le bouton <b>Copier</b> en fin de séance : le carnet est
+          la seule copie durable, et c'est lui qui alimente le tonnage, le 1RM estimé et le décompte
+          de séries par muscle.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== VUE : PROGRAMME ========== -->
+    <div class="view" id="v-prog">
+
+      <div class="sec on" id="s-prog-semaine">
+        <div class="card ok mb">
+          <h3>Phase 1 — en cours depuis le 23/09/2026</h3>
+          <p class="how">Une seule séance par semaine pour démarrer. Le programme Upper/Lower à 4 séances
+          plus bas reste la cible — il n'avait pas démarré après plusieurs semaines. La priorité passe de
+          « couvrir le volume optimal » à « tenir une séance chaque semaine sans faute ». C'est une
+          <b>recommandation</b> à valider avec toi, pas un constat.</p>
+        </div>
+
+        <div class="grid g4 mb">
+          <div class="card"><h3>Structure</h3><div class="kpi" style="font-size:19px">Full Body</div>
+            <div class="note">Tout le corps en mouvements polyarticulaires, chaque semaine.</div></div>
+          <div class="card"><h3>Fréquence</h3><div class="kpi">1 <small>séance/sem.</small></div>
+            <div class="note">Pour commencer. Le jour t'appartient.</div></div>
+          <div class="card"><h3>Durée estimée</h3><div class="kpi">≈58 <small>min</small></div>
+            <div class="note">Échauffement compris. Superset en fin de séance.</div></div>
+          <div class="card"><h3>Cardio</h3><div class="kpi">2 <small>max/sem.</small></div>
+            <div class="note">Inchangé, jours séparés.</div></div>
+        </div>
+
+        <div class="grid g2 mb" id="seanceFB"></div>
+
+        <div class="rest mb">
+          <div class="day"><b>Les 6 autres jours</b> — repos actif ou cardio libre
+            <span class="dim">(2×/sem. max, voir Règles de conduite)</span></div>
+        </div>
+
+        <div class="card warn mb">
+          <h3>Quand passer à 2 séances/semaine — recommandation</h3>
+          <p class="how">Proposition à valider avec toi, pas une règle scientifique figée : quand la séance
+          unique est tenue <b>3 à 4 semaines de suite sans effort d'organisation</b>, avec une récupération
+          correcte (pas de courbature limitante à 48 h, sommeil régulier ≥ 7 h), reprendre directement le
+          programme Upper/Lower ci-dessous — il est déjà prêt, rien à reconstruire.</p>
+        </div>
+
+        <h2 class="h">Phase 2 (plus tard) — programme cible à 4 séances/semaine</h2>
+        <div class="grid g4 mb">
+          <div class="card"><h3>Structure</h3><div class="kpi" style="font-size:19px">Upper / Lower</div>
+            <div class="note">Chaque muscle 2×/semaine.</div></div>
+          <div class="card"><h3>Fréquence</h3><div class="kpi">4 <small>séances/sem.</small></div>
+            <div class="note">Jours 1, 2, 4 et 5.</div></div>
+          <div class="card"><h3>Durée estimée</h3><div class="kpi">45–52 <small>min</small></div>
+            <div class="note">48 / 45 / 52 / 47 min — soit <b>3 h 12 par semaine</b>, échauffements compris.
+              Supersets antagonistes en fin de séance.</div></div>
+          <div class="card"><h3>Cardio</h3><div class="kpi">2 <small>max/sem.</small></div>
+            <div class="note">Jamais avant la muscu.</div></div>
+        </div>
+        <div class="grid g2" id="seances"></div>
+        <div class="rest">
+          <div class="day"><b>Jour 3</b> — repos <span class="dim">· cardio possible</span></div>
+          <div class="day"><b>Jours 6 et 7</b> — repos <span class="dim">· cardio possible</span></div>
+        </div>
+      </div>
+
+      <div class="sec" id="s-prog-regles">
+        <div class="grid g3">
+          <div class="card"><h3>Cardio</h3><ul class="li">
+            <li><b>Allonger avant d'accélérer</b> : 40–45 min à FC ≤ 135 plutôt que 30 min à 141.</li>
+            <li>Intervalles (3 × 1 min à 9 km/h) une séance sur deux seulement.</li>
+            <li>Jamais la veille d'un Lower lourd ; muscu d'abord si les deux tombent le même jour.</li>
+            <li>Hydratation et électrolytes : facteur direct de la dérive à 30 °C.</li></ul></div>
+          <div class="card"><h3>Progression</h3><ul class="li">
+            <li><b>S1–4</b> : RIR 3–4, charges modérées, technique, adaptation tendineuse.</li>
+            <li><b>S5–16</b> : RIR 1–2 sur les séries principales, 12–18 séries/muscle/semaine.</li>
+            <li>Ajouter du poids <i>ou</i> une répétition chaque semaine.</li>
+            <li>10–20 séries dures/muscle/semaine : rendements décroissants au-delà.</li></ul></div>
+          <div class="card"><h3>Alerte</h3><ul class="li">
+            <li><b>Douleur tendineuse</b> → baisser charge et volume sur le mouvement, échauffement 10–15 min.</li>
+            <li>À 40 ans les tendons s'adaptent plus lentement que les muscles : point de rupture le plus probable.</li>
+            <li>Sommeil sous 7 h : la synthèse protéique chute, la séance devient du volume perdu.</li></ul></div>
+        </div>
+      </div>
+
+      <div class="sec" id="s-prog-nut">
+        <div class="card mb">
+          <table>
+            <thead><tr><th>Paramètre</th><th>Cible</th><th>Base</th></tr></thead>
+            <tbody>
+              <tr><td>Calories</td><td>Maintenance <b>+200 à 350 kcal/j</b></td><td class="dim">Iraki et al. 2019, <i>Sports</i> 7(7):154</td></tr>
+              <tr><td>Protéines</td><td><b>160–175 g/j</b> (2,0–2,2 g/kg)</td><td class="dim">Morton et al. 2018, <i>BJSM</i></td></tr>
+              <tr><td>Répartition</td><td>3–4 prises de ~32 g</td><td class="dim">Schoenfeld &amp; Aragon 2018</td></tr>
+              <tr><td>Lipides</td><td>64–80 g/j (0,8–1,0 g/kg)</td><td class="dim">Helms et al. 2014, <i>JISSN</i> 11:20</td></tr>
+              <tr><td>Glucides</td><td>Le reste, prioritairement autour de l'entraînement</td><td class="dim">—</td></tr>
+            </tbody>
+          </table>
+          <div class="note"><b>Suppléments</b> : créatine 3–5 g/j · whey · vitamine D si statut bas ·
+            oméga-3 2–3 g/j EPA+DHA · collagène 15 g + vit. C 1 h avant séance (tendons).
+            <b>Exclu</b> : tout produit dopant ou non réglementé.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== VUE : SÉANCE — FULL BODY (phase 1) ========== -->
+    <div class="view" id="v-seance">
+
+      <div class="sec on" id="s-seance-apercu">
+        <button class="golaunch" data-go="fb">
+          <div><div class="gl1">Démarrer la séance en pas-à-pas</div>
+            <div class="gl2">Plein écran, une étape à la fois · 21 étapes · ≈ 58 min · enregistrée automatiquement</div></div>
+          <div class="glgo">▶ Démarrer</div>
+        </button>
+
+        <div class="grid g4 mb">
+          <div class="card"><h3>Durée</h3><div class="kpi">≈58 <small>min</small></div>
+            <div class="note">Échauffement + 6 exercices, superset en fin de séance.</div></div>
+          <div class="card"><h3>Séries dures</h3><div class="kpi">19</div>
+            <div class="note">Tout le corps couvert en une seule séance.</div></div>
+          <div class="card"><h3>Effort</h3><div class="kpi" style="font-size:19px">RIR 3–4</div>
+            <div class="note">Phase de réathlétisation — technique avant charge.</div></div>
+          <div class="card"><h3>Matériel</h3><div class="kpi" style="font-size:19px">Salle complète</div>
+            <div class="note">Barre, haltères, poulie haute.</div></div>
+        </div>
+
+        <div class="grid g2 mb">
+          <div class="card ok"><h3>Ce que cette séance est</h3>
+            <p class="how">Le point de départ du programme : tout le corps en mouvements polyarticulaires
+            (squat, tirage, développé, charnière de hanche, traction), pour donner un minimum de stimulus à
+            chaque groupe musculaire chaque semaine. Le seul objectif de la phase 1 est l'<b>adhérence</b> —
+            tenir la séance chaque semaine.</p></div>
+          <div class="card warn"><h3>Ce qu'elle n'est pas</h3>
+            <p class="how">Le programme optimal pour l'objectif d'hypertrophie : 10 à 20 séries dures par
+            muscle et par semaine sont hors de portée en une seule séance (Schoenfeld, Ogborn &amp; Krieger
+            2017). C'est un point de départ, pas la destination — voir <b>Phase 2</b> dans l'onglet
+            Programme.</p></div>
+        </div>
+
+        <h2 class="h">Déroulé</h2>
+        <div class="tl" id="tl-fb"></div>
+      </div>
+
+      <div class="sec" id="s-seance-ex">
+        <div class="exgrid" id="exgridFB"></div>
+        <div class="note" style="margin-top:12px">
+          Images : Wikimedia Commons, licences CC BY-SA. Crédit et lien sous chaque fiche. Elles se
+          chargent depuis le web — hors connexion, les cadres restent vides.
+        </div>
+      </div>
+
+      <div class="sec" id="s-seance-kg">
+        <div class="card warn mb">
+          <h3>Avertissement — charges estimées, pas mesurées</h3>
+          <p class="how">Comme pour le développé couché du programme à 4 séances, seule une estimation
+          existe (à partir de 12 pompes strictes et de 79,5 kg de poids de corps). Le squat, le soulevé de
+          terre roumain et le tirage n'ont aucune base chiffrée : la charge de départ est volontairement
+          conservatrice et se corrige dès la première série.</p>
+        </div>
+
+        <h2 class="h">Charges de départ — séance 1</h2>
+        <div class="card mb"><table>
+          <thead><tr><th>Exercice</th><th class="num">Charge de départ</th><th class="num">Séries × reps</th>
+            <th class="num">RIR</th><th>D'où vient le chiffre</th></tr></thead>
+          <tbody id="tb-kg-fb"></tbody>
+        </table></div>
+
+        <div class="grid g2 mb">
+          <div class="card"><h3>Calibrer en séance — séance 1 seulement</h3><ul class="li">
+            <li>Séries d'approche, puis 1<sup>re</sup> série de travail à la charge proposée.</li>
+            <li><b>Plus de 4 reps en réserve</b> → +10 % sur la série suivante.</li>
+            <li><b>Moins de 2 reps en réserve</b> → −10 %.</li>
+            <li>Noter la charge retenue dans le carnet : <b>elle devient la référence</b>, pas mon estimation.</li>
+          </ul></div>
+          <div class="card"><h3>Progresser ensuite</h3><ul class="li">
+            <li>Haut de la fourchette sur <i>toutes</i> les séries à RIR ≥ 2 : +2,5 kg (haut du corps) ou
+              +5 kg (bas du corps), puis redescendre au bas de la fourchette.</li>
+            <li>Une seule variable à la fois : du poids <i>ou</i> une répétition, jamais les deux.</li>
+            <li>Semaines 1–4 : RIR 3–4. Au-delà, RIR 1–2 sur les séries principales — voir Règles de conduite.</li>
+            <li class="dim">À une séance par semaine, la progression sera plus lente qu'à 4 — c'est le
+              compromis accepté pour la phase 1.</li>
+          </ul></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== VUE : JOUR 1 — UPPER A (phase 2, plus tard) ========== -->
+    <div class="view" id="v-jour1">
+
+      <div class="sec on" id="s-j1-live">
+        <button class="golaunch" data-go="j1">
+          <div><div class="gl1">Démarrer la séance en pas-à-pas</div>
+            <div class="gl2">Plein écran, une étape à la fois · 19 étapes · ≈ 48 min · enregistrée automatiquement</div></div>
+          <div class="glgo">▶ Démarrer</div>
+        </button>
+
+        <div class="livebar">
+          <div class="clock"><small>Séance</small><span id="clk">00:00</span></div>
+          <button class="btn p" id="btn-go">Démarrer</button>
+          <div class="rtimer" id="rst">—</div>
+          <button class="btn sm" data-r="60">60 s</button>
+          <button class="btn sm" data-r="90">90 s</button>
+          <button class="btn sm" data-r="120">2 min</button>
+          <button class="btn sm" data-r="150">2 min 30</button>
+          <button class="btn sm" id="btn-rz">Reset</button>
+          <div class="lbcount">séries <b id="cnt">0</b> / <span id="tot">18</span><div class="pbar"><i id="pb"></i></div></div>
+        </div>
+
+        <div id="live"></div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>Comment s'en servir</h3>
+          <p class="how">Clique sur un numéro de série dès qu'elle est finie : elle passe au vert et
+          le chronomètre de repos de cet exercice démarre tout seul. La colonne de gauche donne
+          l'heure de séance à laquelle tu devrais être — c'est un repère, pas une contrainte.</p>
+          <p class="how dim">Le minutage suppose 30–35 s par série et les repos du tableau.
+          Les deux blocs en <b>superset</b> alternent sans repos entre les deux exercices : c'est ce
+          qui fait tenir la séance en 48 min plutôt qu'en 60 (Iversen et al. 2021, −36 % de durée).</p>
+        </div>
+      </div>
+
+      <div class="sec" id="s-j1-ex">
+        <div class="exgrid" id="exgrid1"></div>
+        <div class="note" style="margin-top:12px">
+          Images : Wikimedia Commons — planches Everkinetic, CC BY-SA 3.0. Crédit sous chaque fiche.
+        </div>
+      </div>
+
+      <div class="sec" id="s-j1-kg">
+        <div class="card warn mb">
+          <h3>Avertissement — ces charges sont estimées, pas mesurées</h3>
+          <p class="how">Aucun 1RM n'a été testé. Les valeurs ci-dessous sont déduites des deux seules
+          données disponibles — <b>12 pompes strictes</b> et <b>79,5 kg</b> de poids de corps — puis
+          volontairement minorées pour la semaine 1 (réathlétisation, RIR 3–4). Elles servent de point
+          de départ à corriger dès la première série, pas de cible à tenir.</p>
+        </div>
+
+        <h2 class="h">Charges de départ — semaine 1</h2>
+        <div class="card mb"><table>
+          <thead><tr><th>Exercice</th><th class="num">Charge de départ</th><th class="num">Séries × reps</th>
+            <th class="num">RIR</th><th>D'où vient le chiffre</th></tr></thead>
+          <tbody id="tb-kg"></tbody>
+        </table></div>
+
+        <div class="grid g2 mb">
+          <div class="card"><h3>Calibrer en séance — séance 1 seulement</h3><ul class="li">
+            <li>Faire les séries d'approche, puis la 1<sup>re</sup> série de travail à la charge proposée.</li>
+            <li>S'il te reste <b>plus de 4 reps en réserve</b> → +10 % sur la série suivante.</li>
+            <li>S'il te reste <b>moins de 2 reps</b> → −10 %.</li>
+            <li>Noter la charge retenue dans le carnet : <b>c'est elle la référence</b>, pas mon estimation.</li>
+          </ul></div>
+          <div class="card"><h3>Progresser ensuite</h3><ul class="li">
+            <li>Quand le <b>haut de la fourchette</b> est atteint sur <i>toutes</i> les séries à RIR ≥ 2 :
+              +2,5 kg (haut du corps) ou +5 kg (bas du corps), et redescendre au bas de la fourchette.</li>
+            <li>Une seule variable à la fois : du poids <i>ou</i> une répétition, jamais les deux.</li>
+            <li>Semaines 1–4 : RIR 3–4. Semaines 5–16 : RIR 1–2 sur les séries principales.</li>
+            <li class="dim">Le 1RM se recalcule tout seul dans le carnet (Epley) dès que tu saisis charge et reps.</li>
+          </ul></div>
+        </div>
+
+        <h2 class="h">Méthode d'estimation du développé couché</h2>
+        <div class="card">
+          <p class="how">En position haute de pompe, les mains supportent environ <b>64 à 70 %</b> du poids
+          de corps. À 79,5 kg, cela fait ≈ 52 kg pour 12 répétitions. Epley donne alors
+          <b>1RM ≈ 52 × (1 + 12/30) = 73 kg</b>. La semaine 1 vise ~65 % de ce chiffre, soit 47 kg,
+          arrondi à <b>45 kg</b> (barre 20 kg + 2 × 12,5 kg).</p>
+          <p class="how dim"><b>Réserve</b> : la pompe et le développé couché ne sont pas le même mouvement —
+          omoplates libres contre omoplates bloquées sur le banc. La correspondance est une hypothèse
+          de travail, pas une mesure. Le vrai chiffre viendra d'une série de 3 à 8 reps au développé,
+          protocole NSCA, à faire dès que la technique est stable.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== VUE : 15 MIN SANS SALLE ========== -->
+    <div class="view" id="v-sansalle">
+
+      <div class="sec on" id="s-sans-apercu">
+        <button class="golaunch" data-go="ss">
+          <div><div class="gl1">Démarrer la séance en pas-à-pas</div>
+            <div class="gl2">Plein écran, une étape à la fois · 13 étapes · ≈ 15 min · enregistrée automatiquement</div></div>
+          <div class="glgo">▶ Démarrer</div>
+        </button>
+
+        <div class="grid g4 mb">
+          <div class="card"><h3>Durée</h3><div class="kpi">15 <small>min</small></div>
+            <div class="note">2 min d'échauffement + 2 tours de 6 min + 1 min de repos.</div></div>
+          <div class="card"><h3>Matériel</h3><div class="kpi" style="font-size:19px">Aucun</div>
+            <div class="note">Une table solide ou une barre basse pour le tirage.</div></div>
+          <div class="card"><h3>Séries dures</h3><div class="kpi">12</div>
+            <div class="note">2 par groupe musculaire. Complément, pas substitut.</div></div>
+          <div class="card"><h3>Effort</h3><div class="kpi" style="font-size:19px">RIR 2</div>
+            <div class="note">Jamais l'échec — correction directe de la séance du 16/08.</div></div>
+        </div>
+
+        <div class="grid g2 mb">
+          <div class="card ok"><h3>Ce que la séance est</h3>
+            <p class="how">Une séance d'entretien à densité élevée : repos courts, alternance
+            poussée / tirage / jambes, six mouvements qui couvrent tout le corps. Elle maintient la
+            qualité de mouvement et le coût cardiaque quand la salle n'est pas accessible.</p></div>
+          <div class="card warn"><h3>Ce qu'elle n'est pas</h3>
+            <p class="how">Une séance d'hypertrophie. Le repos y est trop court — 3 min &gt; 1 min sur
+            les gros mouvements (Schoenfeld 2016) — et 2 séries dures par muscle sont très en dessous
+            de la cible de 10–20 séries/muscle/semaine. <b>1 à 2 fois par semaine maximum, en plus des
+            4 séances du programme, jamais à leur place.</b></p></div>
+        </div>
+
+        <h2 class="h">Déroulé</h2>
+        <div class="tl" id="tl"></div>
+
+        <h2 class="h">Ce qu'elle corrige par rapport au 16/08</h2>
+        <div class="card"><ul class="li">
+          <li><b>Poussée verticale ajoutée</b> (pompes piquées) — les épaules étaient à zéro série.</li>
+          <li><b>Charnière de hanche ajoutée</b> (pont fessier une jambe) — la chaîne postérieure était ignorée.</li>
+          <li><b>Gainage ajouté</b> — absent du circuit initial.</li>
+          <li><b>Effort plafonné à RIR 2</b> — les tractions avaient été menées à l'échec.</li>
+          <li><b>Mollets laissés au programme en salle</b> : seul trou volontairement non comblé.</li>
+        </ul></div>
+      </div>
+
+      <div class="sec" id="s-sans-ex">
+        <div class="exgrid" id="exgrid"></div>
+        <div class="note" style="margin-top:12px">
+          Images : Wikimedia Commons, licences CC BY-SA 3.0 / 4.0 et domaine public.
+          Crédit et lien sous chaque fiche. Elles se chargent depuis le web — hors connexion, les cadres restent vides.
+        </div>
+      </div>
+
+      <div class="sec" id="s-sans-prog">
+        <div class="grid g2 mb">
+          <div class="card"><h3>Ordre de progression</h3><ul class="li">
+            <li><b>1.</b> Atteindre le haut de la fourchette de reps sur les <i>deux</i> tours
+              (12 pompes, 10 rows…).</li>
+            <li><b>2.</b> Passer à la variante plus dure, revenir au bas de la fourchette, recommencer.</li>
+            <li><b>3.</b> Ajouter un troisième tour seulement si les deux premiers tiennent à RIR 2 sans
+              dégradation de forme — la séance passe alors à 22 min et sort de son cahier des charges.</li>
+            <li class="dim">Ne jamais allonger la séance avant d'avoir épuisé les étapes 1 et 2.</li>
+          </ul></div>
+          <div class="card warn"><h3>Finisher optionnel — 2 min</h3>
+            <p class="how"><b>Pistol squat</b>, 3 × 3–5 reps par jambe. À droite en complet,
+            à gauche avec appui mural. Travail direct de l'asymétrie relevée le 16/08.</p>
+            <p class="how">Le critère de progrès est la <b>réduction de l'assistance</b> —
+            paume → deux doigts → un doigt → rien — et non l'ajout de répétitions.</p>
+            <p class="how dim">Signal d'arrêt : douleur tendineuse au genou, à l'épaule ou au coude.</p></div>
+        </div>
+
+        <h2 class="h">Report dans le carnet</h2>
+        <div class="card">
+          <p class="how">Une ligne par série dans l'onglet <b>Séances</b> · colonne Séance = <span class="pill">Autre</span> ·
+          charge laissée vide (poids du corps) · note = <span class="pill">15 min sans salle</span>.
+          Les <b>répétitions</b> sont la métrique de progression ici, pas le tonnage.</p>
+          <p class="how dim">Exercices à avoir dans l'onglet Exercices : Pompes piquées (Épaules),
+          Pont fessier une jambe (Ischios-Fessiers), Inverted row pieds surélevés (Dos), Pistol squat (Quadriceps).</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== VUE : RÉFÉRENCES ========== -->
+    <div class="view" id="v-refs">
+      <div class="sec on" id="s-refs-tout">
+        <div class="card mb"><h3>Pourquoi ce programme et pas un autre</h3><ul class="li">
+          <li><b>Le volume est le levier principal</b> — 0,24 à 0,38 % d'hypertrophie par série additionnelle
+            (Schoenfeld, Ogborn &amp; Krieger 2017 ; méta-régression bayésienne 2024).</li>
+          <li><b>La fréquence n'a pas d'effet propre à volume égal</b> (Schoenfeld, Grgic &amp; Krieger 2019,
+            25 études, 836 sujets, I² = 0 %) : les 2 passages par muscle servent à répartir le volume.</li>
+          <li><b>L'échec complet n'est pas requis</b> : 0–3 RIR suffit (Refalo et al. 2023,
+            <i>Sports Medicine</i> 53(3):649-665).</li>
+          <li><b>Supersets antagonistes</b> : séance raccourcie d'environ 36 % sans perte d'adaptations
+            (Iversen, Norum, Schoenfeld &amp; Fimland 2021, <i>Sports Medicine</i> 51(10):2079-2095).</li>
+          <li><b>3 min de repos &gt; 1 min</b> sur les gros mouvements (Schoenfeld et al. 2016).</li>
+          <li><b>La course interfère plus que le vélo ou la natation</b> (dommages excentriques) — d'où le
+            plafond de 2 séances et le placement après la muscu.</li>
+          <li><b>Sommeil</b> : 5 nuits à 4 h abaissent la synthèse protéique myofibrillaire de ~19 %
+            (Saner et al. 2020, <i>J Physiol</i> 598:1523-1536).</li>
+        </ul></div>
+
+        <div class="card"><h3>Réserves méthodologiques</h3><ul class="li">
+          <li>La plupart des études d'hypertrophie durent 8–16 semaines sur des sujets jeunes ;
+            les données sur les « masters intermédiaires » sont rares.</li>
+          <li>Le seuil protéique de 1,62 g/kg est une moyenne de population (IC 95 % jusqu'à 2,2).</li>
+          <li>Les repères de force par poids de corps viennent de bases de charges déclarées :
+            ce sont des objectifs, pas des moyennes de débutants de 40 ans.</li>
+          <li>FCmax par formule (Tanaka) : écart-type d'environ ±7 bpm. Les zones sont indicatives.</li>
+          <li>La chaleur ambiante (30 °C) fausse toute comparaison de FC entre séances.</li>
+          <li><b>Le suivi de sa propre courbe est plus fiable que la comparaison à toute norme externe.</b></li>
+        </ul></div>
+      </div>
+    </div>
+
+    </div><!-- /body -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ================= MODE PAS-À-PAS ================= -->
+<div class="wz" id="wz">
+  <div class="wztop">
+    <button class="wzx" id="wz-x" title="Quitter">✕</button>
+    <div class="wzmeta"><b id="wz-ttl">—</b><br><span id="wz-pos">—</span></div>
+    <div class="wzclk" id="wz-clk">00:00</div>
+  </div>
+  <div class="wzbar"><i id="wz-pb"></i></div>
+  <div class="wzbody" id="wz-body"></div>
+  <div class="wznext" id="wz-next"></div>
+  <div class="wzbtns">
+    <button class="wzb gh" id="wz-back">◀</button>
+    <button class="wzb big" id="wz-do">Commencer</button>
+  </div>
+</div>
+
+<script>
+/* ================= navigation sidebar + topbar ================= */
+const MENU={
+  etat:    {ttl:"État actuel",        subs:[["s-etat-resume","Positionnement"],["s-etat-journal","Dernière séance"],["s-etat-hist","Mes séances"]]},
+  prog:    {ttl:"Programme",          subs:[["s-prog-semaine","Semaine type"],["s-prog-regles","Règles de conduite"],["s-prog-nut","Nutrition"]]},
+  seance:  {ttl:"Séance — Full Body · 58 min", subs:[["s-seance-apercu","Aperçu"],["s-seance-ex","Les 7 exercices"],["s-seance-kg","Charges"]]},
+  jour1:   {ttl:"Upper A · phase 2 · 48 min", subs:[["s-j1-live","Mode séance"],["s-j1-ex","Les 6 exercices"],["s-j1-kg","Charges"]]},
+  sansalle:{ttl:"15 min sans salle",  subs:[["s-sans-apercu","Aperçu"],["s-sans-ex","Les 6 exercices"],["s-sans-prog","Progression"]]},
+  refs:    {ttl:"Références",         subs:[["s-refs-tout","Fondements"]]}
+};
+function showView(v){
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  const m=MENU[v];
+  document.getElementById('topbar').innerHTML =
+    `<span class="ttl">${m.ttl}</span>` +
+    m.subs.map((s,i)=>`<div class="tab${i===0?' on':''}" data-s="${s[0]}">${s[1]}</div>`).join('');
+  document.querySelectorAll('#v-'+v+' .sec').forEach((x,i)=>x.classList.toggle('on',i===0));
+  document.getElementById('body').scrollTop=0;
+  document.querySelectorAll('#topbar .tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('#topbar .tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.querySelectorAll('#v-'+v+' .sec').forEach(x=>x.classList.toggle('on',x.id===t.dataset.s));
+    document.getElementById('body').scrollTop=0;
+  });
+}
+document.querySelectorAll('.nav a').forEach(a=>a.onclick=()=>showView(a.dataset.v));
+showView('etat');
+
+/* ================= barème ================= */
+const NIV=["Très faible","Faible","Moyen","Bon","Excellent"];
+const COL=["var(--n0)","var(--n1)","var(--n2)","var(--n3)","var(--n4)"];
+const stats=[
+ {k:"pompes",n:"Pompes strictes",u:"reps",v:12,s:[10,14,18,25],ref:"ACSM/CSEP, H 40–49"},
+ {k:"tract", n:"Tractions pronation",u:"reps",v:3,s:[3,6,9,15],ref:"StrengthLevel, 80 kg"},
+ {k:"squat", n:"Squat — 1RM",u:"kg",v:null,s:[60,80,119,159],ref:"0,75 / 1,0 / 1,5 / 2,0 × PDC"},
+ {k:"bench", n:"Développé couché — 1RM",u:"kg",v:null,s:[40,60,87,119],ref:"0,5 / 0,75 / 1,1 / 1,5 × PDC"},
+ {k:"dead",  n:"Soulevé de terre — 1RM",u:"kg",v:null,s:[80,99,143,191],ref:"1,0 / 1,25 / 1,8 / 2,4 × PDC"},
+ {k:"grip",  n:"Préhension",u:"kg",v:null,s:[35,44,50,56],ref:"Norme dynamomètre 40–44"},
+ {k:"vo2",   n:"VO₂max",u:"ml/kg/min",v:24,est:true,s:[30,36,41,46],ref:"Cooper/ACSM, H 40–49"},
+ {k:"deriv", n:"Dérive cardiaque",u:"%",v:10.2,inv:true,s:[8,5,3,2],ref:"Seuil d'alerte : 5 %"}
+];
+function niveau(st){
+  if(st.v==null)return null;
+  const s=st.s,v=st.v;
+  if(st.inv){
+    if(v>s[0])return{i:0,f:Math.max(0,Math.min(1,1-(v-s[0])/(s[0]*0.6)))};
+    if(v>s[1])return{i:1,f:(s[0]-v)/(s[0]-s[1])};
+    if(v>s[2])return{i:2,f:(s[1]-v)/(s[1]-s[2])};
+    if(v>s[3])return{i:3,f:(s[2]-v)/(s[2]-s[3])};
+    return{i:4,f:Math.min(1,(s[3]-v)/s[3]+0.3)};
+  }
+  if(v<s[0])return{i:0,f:Math.max(0,Math.min(1,v/s[0]))};
+  if(v<s[1])return{i:1,f:(v-s[0])/(s[1]-s[0])};
+  if(v<s[2])return{i:2,f:(v-s[1])/(s[2]-s[1])};
+  if(v<s[3])return{i:3,f:(v-s[2])/(s[3]-s[2])};
+  return{i:4,f:Math.min(1,(v-s[3])/(s[3]*0.3))};
+}
+function palier(st,r){
+  if(st.v==null)return"—";
+  if(st.inv){ if(r.i>=4)return"tenu"; return"< "+String(st.s[r.i]).replace('.',',')+" %"; }
+  if(r.i>=4)return"tenu";
+  const c=st.s[r.i];
+  return "+"+(c-st.v).toFixed(st.u==="reps"?0:1).replace('.',',')+" → "+c+" "+st.u;
+}
+const fr=x=>String(x).replace('.',',');
+function render(){
+  const tb=document.getElementById('tb'); tb.innerHTML='';
+  let som=0,nb=0;
+  stats.forEach(st=>{
+    const r=niveau(st), tr=document.createElement('tr');
+    let seg=''; for(let i=0;i<5;i++) seg+=`<i class="${r&&r.i===i?'act':''}" style="background:${COL[i]}"></i>`;
+    let mk='';
+    if(r){const p=((r.i+Math.max(0,Math.min(1,r.f)))/5*100).toFixed(1);
+      mk=`<span class="mk" style="left:${p}%"></span><span class="mkl" style="left:${p}%"></span>`;}
+    const val = st.v==null ? '<span class="dim">non testé</span>'
+              : `<b>${fr(st.v)}</b> <span class="dim">${st.u}</span>`+(st.est?' <span class="pill">est.</span>':'');
+    const lvl = r ? `<span class="lvl" style="color:${COL[r.i]}">${NIV[r.i]}</span>` : `<span class="pill">à mesurer</span>`;
+    tr.innerHTML=`<td class="name">${st.n}</td><td class="num">${val}</td><td>${lvl}</td>
+      <td><div class="scale">${seg}${mk}</div></td>
+      <td class="num dim">${palier(st,r)}</td><td class="dim">${st.ref}</td>`;
+    tb.appendChild(tr);
+    if(r&&!st.est){som+=r.i+Math.max(0,Math.min(1,r.f));nb++;}
+  });
+  const mes=stats.filter(s=>s.v!=null&&!s.est).length;
+  document.getElementById('k-mes').innerHTML=mes+' <small>/ '+stats.length+' tests</small>';
+  if(nb){
+    const m=som/nb, noms=["Très faible","Novice","Intermédiaire","Avancé","Élite"];
+    const g=document.getElementById('k-niv');
+    g.textContent=noms[Math.min(4,Math.floor(m))];
+    g.style.color=COL[Math.min(4,Math.floor(m))];
+  }
+}
+render();
+
+/* ================= répartition séance 16/08 ================= */
+const rep=[["Quadriceps",4,"squat à vide, fentes, 2 pistols"],["Dos",3,"2 inverted rows + tractions"],
+ ["Pectoraux",2,"2 séries de pompes"],["Triceps",1,"dips"],
+ ["Épaules",0,"—"],["Ischios-Fessiers",0,"—"],["Mollets",0,"—"],["Gainage",0,"—"]];
+document.getElementById('tb-rep').innerHTML=rep.map(r=>
+  `<tr><td class="name">${r[0]}</td><td class="num"><b style="color:${r[1]?'var(--txt)':'var(--n0)'}">${r[1]}</b></td>
+   <td class="dim">${r[2]}</td></tr>`).join('');
+
+/* ================= programme ================= */
+const seances=[
+ {n:"Jour 1 — Upper A",t:"poussée",d:48,ex:[
+  ["Développé couché barre","4 × 6–8","1–2","2–3 min"],["Développé militaire haltères","3 × 8–10","1–2","2 min"],
+  ["Tirage horizontal","3 × 8–10","1–2","2 min"],["Élévations latérales","3 × 12–15","0–1","60–90 s"],
+  ["Extension triceps poulie","3 × 10–12","1","60–90 s"],["Curl biceps haltères","2 × 10–12","1","60 s"]]},
+ {n:"Jour 2 — Lower A",t:"quadriceps",d:45,ex:[
+  ["Squat","4 × 5–8","1–2","2–3 min"],["Presse à cuisses ou fentes","3 × 10–12","1–2","2 min"],
+  ["Leg curl","3 × 10–12","1–2","90 s"],["Mollets debout","3 × 12–15","0–1","60 s"],
+  ["Gainage planche","3 × 30–45 s","—","60 s"]]},
+ {n:"Jour 4 — Upper B",t:"tirage",d:52,ex:[
+  ["Tractions ou tirage vertical","4 × 6–10","1–2","2–3 min"],["Développé incliné haltères","3 × 8–10","1–2","2 min"],
+  ["Rowing haltère unilatéral","3 × 10–12","1–2","90 s–2 min"],["Élévations latérales","3 × 12–15","0–1","90 s"],
+  ["Curl barre EZ","3 × 10–12","1","60–90 s"],["Extension triceps corde","2 × 12–15","1","60 s"]]},
+ {n:"Jour 5 — Lower B",t:"chaîne postérieure",d:47,ex:[
+  ["Soulevé de terre roumain","4 × 6–8","1–2","2–3 min"],["Fentes marchées ou hip thrust","3 × 10–12","1–2","90 s–2 min"],
+  ["Leg extension ou presse pieds hauts","3 × 10–12","1–2","90 s"],["Mollets assis","3 × 15","0–1","60 s"],
+  ["Gainage latéral","3 × 30–45 s","—","60 s"]]}
+];
+document.getElementById('seances').innerHTML=seances.map(s=>`
+  <div class="seance">
+    <div class="hd"><span class="nm">${s.n}</span>
+      <span><span class="pill">${s.t}</span> <span class="pill b">≈ ${s.d} min</span></span></div>
+    <table><thead><tr><th>Exercice</th><th class="num">Séries × reps</th>
+      <th class="num">RIR</th><th class="num">Repos</th></tr></thead>
+    <tbody>${s.ex.map(e=>`<tr><td>${e[0]}</td><td class="num">${e[1]}</td>
+      <td class="num dim">${e[2]}</td><td class="num dim">${e[3]}</td></tr>`).join('')}</tbody></table>
+  </div>`).join('');
+
+/* ================= séance sans salle : déroulé ================= */
+const tl=[
+ ["2 min","Échauffement","Cercles de bras · 10 squats à vide · 5 pompes lentes · 10 fentes sans à-coup",0],
+ ["6 min","Tour 1","Les 6 exercices — 45 s de travail, 15 s de transition",1],
+ ["1 min","Repos","Debout, respiration nasale",0],
+ ["6 min","Tour 2","Les 6 mêmes exercices, même cadence",1],
+ ["15 min","Total","12 séries dures · 2 par groupe musculaire",0]
+];
+document.getElementById('tl').innerHTML=tl.map(r=>
+  `<div class="row${r[3]?' hi':''}"><div class="dur${r[1]==='Total'?' acc':''}">${r[0]}</div>
+   <div class="ph">${r[1]}</div><div class="ct">${r[2]}</div></div>`).join('');
+
+/* ================= séance sans salle : fiches ================= */
+const U="https://upload.wikimedia.org/wikipedia/commons/";
+const EX=[
+ {n:"Pompes",mu:"Pectoraux · triceps",reps:"8–12 reps",rir:"RIR 2",tempo:"45 s",
+  img:[[U+"9/96/Push-ups-1.png","Départ"],[U+"1/1a/Push-ups-2.png","Bas"]],
+  how:"Mains largeur d'épaules, corps aligné cheville-hanche-épaule, coudes à environ 45° du buste — pas écartés à 90°. Descendre poitrine près du sol, remonter sans creuser le bas du dos.",
+  up:"Pieds surélevés · pause 2 s en bas · pompes diamant",
+  dn:"Mains sur une table",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Push-ups-1.png"},
+
+ {n:"Inverted row pieds surélevés",mu:"Dos · biceps",reps:"6–10 reps",rir:"RIR 2",tempo:"45 s",
+  img:[[U+"thumb/f/f4/Man_performing_inverted_row_with_suspension_trainer.jpg/960px-Man_performing_inverted_row_with_suspension_trainer.jpg","Tirage"]],
+  how:"Sous une table solide ou une barre basse, corps gainé en planche inversée. Tirer la poitrine vers la prise, omoplates serrées en fin de mouvement. C'est le meilleur levier vers les tractions : il permet une progression fine que la traction seule, à 3 reps, ne permet pas.",
+  up:"Pieds plus hauts (30 → 50 cm) · pause 2 s en haut · une main",
+  dn:"Pieds au sol, genoux fléchis",
+  cr:"Slyngebehandling, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Man_performing_inverted_row_with_suspension_trainer.jpg"},
+
+ {n:"Fentes avant alternées",mu:"Quadriceps · fessiers",reps:"8–10 paires",rir:"RIR 2",tempo:"45 s",
+  img:[[U+"5/55/Lunges-1.png","Départ"],[U+"5/52/Lunges-2.png","Fente"]],
+  how:"Grand pas en avant, genou arrière vers le sol sans le toucher, buste droit, genou avant au-dessus du pied. Une paire = une fente à droite + une à gauche.",
+  up:"Fentes sautées · pied arrière surélevé (fente bulgare)",
+  dn:"Amplitude réduite, appui d'une main sur un mur",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Lunges-1.png"},
+
+ {n:"Pompes piquées",mu:"Épaules · triceps",reps:"6–10 reps",rir:"RIR 2",tempo:"45 s",
+  img:[[U+"thumb/4/47/Handstand_pushup.jpg/960px-Handstand_pushup.jpg","Version avancée (équilibre)"]],
+  how:"Départ en V : mains et pieds au sol, hanches hautes, tête entre les bras. Fléchir les coudes pour amener le sommet du crâne vers le sol, puis pousser. C'est la version accessible du développé militaire — plus les hanches sont hautes, plus la charge passe sur les épaules.",
+  up:"Pieds sur une chaise · pompes en équilibre contre un mur",
+  dn:"Hanches plus basses",
+  note:"L'image montre la version en équilibre, aboutissement de la progression — la pompe piquée se fait pieds au sol.",
+  cr:"U.S. Air Force / Senior Airman Stephanie Rubi, domaine public",crl:"https://commons.wikimedia.org/wiki/File:Handstand_pushup.jpg"},
+
+ {n:"Pont fessier une jambe",mu:"Ischios · fessiers",reps:"10–12 / côté",rir:"RIR 2",tempo:"45 s",
+  img:[[U+"thumb/3/34/Glute-bridge.png/960px-Glute-bridge.png","Position haute"]],
+  how:"Dos au sol, un pied à plat, l'autre jambe tendue. Monter le bassin en serrant le fessier, épaules-hanches-genou alignés en haut, pause de 1 s, redescendre sans poser. C'est la charnière de hanche absente du 16/08 : sans elle, le circuit travaille les quadriceps et ignore la chaîne postérieure.",
+  up:"Pied sur une surface haute · pause 3 s en haut",
+  dn:"Deux pieds au sol",
+  cr:"Marianne Gilbak, CC BY-SA 4.0",crl:"https://commons.wikimedia.org/wiki/File:Glute-bridge.png"},
+
+ {n:"Gainage planche",mu:"Gainage",reps:"30–45 s",rir:"—",tempo:"45 s",
+  img:[[U+"thumb/e/ee/Plank.jpg/960px-Plank.jpg","Position tenue"]],
+  how:"Coudes sous les épaules, corps aligné, fessiers et abdominaux contractés, bassin en rétroversion légère. Arrêter dès que le bas du dos s'affaisse — la durée n'a d'intérêt que si la position tient.",
+  up:"Lever un pied · extension alternée bras/jambe",
+  dn:"Genoux au sol",
+  cr:"Jaykayfit, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Plank.jpg"},
+
+ {n:"Pistol squat",mu:"Quadriceps — finisher optionnel",reps:"3 × 3–5 / jambe",rir:"RIR 2",tempo:"2 min",
+  img:[[U+"thumb/2/29/Pistol-squat.jpg/960px-Pistol-squat.jpg","Position basse"]],
+  how:"Sur une jambe, l'autre tendue devant, descendre en gardant le talon au sol et le buste aussi droit que possible. À droite en complet, à gauche avec appui d'une main au mur — c'est l'asymétrie relevée le 16/08.",
+  up:"Réduire l'assistance : paume → deux doigts → un doigt → rien",
+  dn:"Descendre sur une chaise, puis sur un support de plus en plus bas",
+  cr:"Jgcastor, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Pistol-squat.jpg"}
+];
+document.getElementById('exgrid').innerHTML=EX.map((e,i)=>`
+  <div class="ex">
+    <div class="exhd"><div class="no">${i<6?i+1:'★'}</div>
+      <div><div class="exnm">${e.n}</div></div>
+      <div class="exmu">${e.mu}</div></div>
+    <div class="shots">${e.img.map(g=>`
+      <div class="shot"><img src="${g[0]}" alt="${e.n} — ${g[1]}" loading="lazy"
+        onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<div class=ph>image indisponible<br>hors connexion</div>')">
+        <span class="cap">${g[1]}</span></div>`).join('')}</div>
+    <div class="exbd">
+      <div class="dose"><b>${e.reps}</b><b>${e.rir}</b><b>${e.tempo}</b></div>
+      <p class="how">${e.how}</p>
+      ${e.note?`<p class="how dim" style="font-size:11.5px">${e.note}</p>`:''}
+      <div class="pm">
+        <div class="up"><span class="t">Plus dur</span><span class="dim">${e.up}</span></div>
+        <div class="dn"><span class="t">Plus facile</span><span class="dim">${e.dn}</span></div>
+      </div>
+    </div>
+    <div class="credit">${e.cr} — <a href="${e.crl}" target="_blank" rel="noopener">Wikimedia Commons</a></div>
+  </div>`).join('');
+
+/* ================= JOUR 1 — données ================= */
+const J1=[
+ {ty:"warm",t0:0,dur:10,n:"Échauffement",
+  cue:"5 min de vélo ou marche rapide · rotations d'épaules et passages de bâton · puis approches au développé : barre à vide × 10, 30 kg × 5, 40 kg × 3.",
+  meta:"10–15 min à 40 ans : les tendons s'adaptent plus lentement que les muscles."},
+
+ {ty:"ex",t0:10,dur:11,n:"Développé couché barre",kg:"45 kg",sets:4,reps:"6–8",rir:"3–4",rest:150,
+  mu:"Pectoraux",img:"a/a8/Bench-press-1.png",
+  cue:"Omoplates serrées et basses, pieds ancrés, barre au niveau du bas des pectoraux, coudes à ~45°. Ne pas rebondir sur la poitrine."},
+
+ {ty:"ex",t0:21,dur:7,n:"Développé militaire haltères",kg:"2 × 10 kg",sets:3,reps:"8–10",rir:"3–4",rest:120,
+  mu:"Épaules",img:"1/15/Dumbbell-shoulder-press-1.png",
+  cue:"Assis, dossier vertical, abdominaux gainés, ne pas cambrer le bas du dos. Coudes légèrement en avant du plan du buste."},
+
+ {ty:"ex",t0:28,dur:7,n:"Tirage horizontal",kg:"35–40 kg",sets:3,reps:"8–10",rir:"3–4",rest:120,
+  mu:"Dos",img:"2/2d/Cable-seated-rows-1.png",
+  cue:"Buste stable, tirer avec les coudes vers les hanches, omoplates serrées en fin de course, relâcher en contrôle sans arrondir le dos."},
+
+ {ty:"ss",t0:35,dur:9,n:"Superset — élévations latérales + extension triceps",rest:90,tours:3,
+  meta:"3 tours · enchaîner A puis B sans repos, 90 s après chaque tour",
+  pair:[
+   {n:"Élévations latérales",kg:"2 × 5 kg",sets:3,reps:"12–15",rir:"0–1",mu:"Épaules",
+    img:"f/fd/Dumbbell-lateral-raises-1.png",
+    cue:"Léger buste en avant, coudes à peine fléchis, monter jusqu'à l'horizontale. L'erreur classique est la charge trop lourde : le trapèze prend le relais."},
+   {n:"Extension triceps poulie",kg:"15 kg",sets:3,reps:"10–12",rir:"1",mu:"Triceps",
+    img:"7/74/Triceps-pushdown-1.gif",
+    cue:"Coudes collés au buste et immobiles, seul l'avant-bras bouge. Extension complète en bas sans verrouiller brutalement."}]},
+
+ {ty:"ex",t0:44,dur:4,n:"Curl biceps haltères",kg:"2 × 8 kg",sets:2,reps:"10–12",rir:"1",rest:60,
+  mu:"Biceps",img:"d/d3/Standing-biceps-curl-1.gif",
+  cue:"Coudes fixes le long du buste, pas d'élan de hanches, descente contrôlée sur 2 s."},
+
+ {ty:"end",t0:48,dur:0,n:"Fin de séance",
+  cue:"Reporter les charges retenues dans le carnet — onglet Séances, une ligne par série.",
+  meta:"48 min au total, 18 séries dures."}
+];
+
+const CU="https://upload.wikimedia.org/wikipedia/commons/";
+const mmss=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+
+/* ---- rendu du déroulé live ---- */
+let TOT=0;
+function setsHTML(id,n,rest,lbl,val){
+  val=val||1;
+  return `<div class="sets">${lbl?`<span class="lb">${lbl}</span>`:''}`+
+    Array.from({length:n},(_,i)=>`<button class="set" data-k="${id}-${i}" data-rest="${rest}" data-val="${val}">${i+1}</button>`).join('')+
+    `</div>`;
+}
+(function renderLive(){
+  let h='';
+  J1.forEach((b,bi)=>{
+    if(b.ty==="warm"||b.ty==="end"){
+      h+=`<div class="blk"><div class="tcol"><div class="t0">${hm(b.t0)}</div>
+        ${b.dur?`<div class="tdur">${b.dur} min</div>`:''}</div>
+        <div class="mcol"><div class="bnm">${b.n}</div>
+        <div class="cue">${b.cue}</div>
+        ${b.meta?`<div class="meta">${b.meta}</div>`:''}</div></div>`;
+    } else if(b.ty==="ex"){
+      TOT+=b.sets;
+      h+=`<div class="blk"><div class="tcol"><div class="t0">${hm(b.t0)}</div>
+        <div class="tdur">${b.dur} min</div></div>
+        <div class="thumb"><img src="${CU+b.img}" alt="${b.n}" loading="lazy"></div>
+        <div class="mcol">
+          <div class="bnm">${b.n}<span class="kg">${b.kg}</span></div>
+          <div class="meta">${b.sets} × ${b.reps} reps · RIR ${b.rir} · repos ${b.rest>=60?(b.rest/60).toString().replace('.5',' min 30').replace(/^(\d)$/,'$1 min'):b.rest+' s'} · ${b.mu}</div>
+          <div class="cue">${b.cue}</div>
+          ${setsHTML('b'+bi,b.sets,b.rest,'Séries')}
+        </div></div>`;
+    } else if(b.ty==="ss"){
+      TOT+=b.tours*b.pair.length;
+      h+=`<div class="blk"><div class="tcol"><div class="t0">${hm(b.t0)}</div>
+        <div class="tdur">${b.dur} min</div></div>
+        <div class="mcol">
+          <div class="bnm">${b.n}</div>
+          <div class="meta">${b.meta}</div>`;
+      b.pair.forEach((p,pi)=>{
+        TOT+=0;
+        h+=`<div style="display:flex;gap:10px;align-items:flex-start;border-top:1px solid #1d2731;padding-top:7px">
+          <div style="flex:0 0 62px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center">
+            <img src="${CU+p.img}" alt="${p.n}" loading="lazy" style="width:100%;max-height:62px;object-fit:contain">
+          </div>
+          <div style="flex:1 1 auto;min-width:0">
+            <div class="bnm" style="font-size:13px">${"AB"[pi]}. ${p.n}<span class="kg">${p.kg}</span></div>
+            <div class="meta">${p.sets} × ${p.reps} reps · RIR ${p.rir} · ${p.mu}</div>
+            <div class="cue">${p.cue}</div>
+          </div></div>`;
+      });
+      h+=setsHTML('b'+bi,b.tours,b.rest,'Tours',b.pair.length)+`</div></div>`;
+    }
+  });
+  document.getElementById('live').innerHTML=h;
+})();
+
+/* ---- interactions : cases de série + minuteurs ---- */
+let done=0, t0=null, tick=null, rleft=0, rtick=null;
+const $=id=>document.getElementById(id);
+$('tot').textContent=TOT;
+function bump(){
+  $('cnt').textContent=done;
+  $('pb').style.width=(done/TOT*100)+'%';
+}
+function beep(){
+  try{const c=new (window.AudioContext||window.webkitAudioContext)();
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.12;
+    o.start();setTimeout(()=>{o.stop();c.close();},280);}catch(e){}
+}
+function startRest(s){
+  clearInterval(rtick); rleft=s;
+  const el=$('rst'); el.className='rtimer run'; el.textContent=mmss(rleft);
+  rtick=setInterval(()=>{
+    rleft--;
+    if(rleft<=0){clearInterval(rtick);el.className='rtimer fin';el.textContent='GO';beep();}
+    else el.textContent=mmss(rleft);
+  },1000);
+}
+document.querySelectorAll('#live .set').forEach(b=>b.onclick=()=>{
+  const on=b.classList.toggle('ok'), v=+b.dataset.val||1;
+  done+=on?v:-v; bump();
+  if(on){ startRest(+b.dataset.rest); if(!t0) $('btn-go').click(); }
+});
+document.querySelectorAll('.livebar [data-r]').forEach(b=>b.onclick=()=>startRest(+b.dataset.r));
+$('btn-go').onclick=()=>{
+  if(t0){ clearInterval(tick); t0=null; $('btn-go').textContent='Reprendre'; return; }
+  const base=Date.now()-(parseInt($('clk').dataset.el||0)*1000);
+  t0=base; $('btn-go').textContent='Pause';
+  tick=setInterval(()=>{
+    const el=Math.floor((Date.now()-t0)/1000);
+    $('clk').dataset.el=el; $('clk').textContent=mmss(el);
+  },500);
+};
+$('btn-rz').onclick=()=>{
+  clearInterval(tick); clearInterval(rtick); t0=null; done=0;
+  $('clk').dataset.el=0; $('clk').textContent='00:00'; $('btn-go').textContent='Démarrer';
+  $('rst').className='rtimer'; $('rst').textContent='—';
+  document.querySelectorAll('#live .set.ok').forEach(s=>s.classList.remove('ok'));
+  bump();
+};
+
+/* ---- fiches détaillées Jour 1 ---- */
+const EX1=[
+ {n:"Développé couché barre",mu:"Pectoraux · triceps · épaules",reps:"4 × 6–8",rir:"RIR 3–4",tempo:"45 kg",
+  img:[[CU+"a/a8/Bench-press-1.png","Départ"],[CU+"f/f7/Bench-press-2.png","Bas"]],
+  how:"Allongé, omoplates serrées et basses, pieds ancrés au sol, légère cambrure naturelle. Descendre la barre au niveau du bas des pectoraux, coudes à environ 45° du buste. Ne pas rebondir sur la poitrine ; marquer un contact léger puis pousser.",
+  up:"+2,5 kg quand 8 reps sortent à RIR ≥ 2 sur les 4 séries",
+  dn:"Barre à vide ou haltères si l'épaule tire · réduire l'amplitude en fin de série",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Bench-press-1.png"},
+
+ {n:"Développé militaire haltères",mu:"Épaules · triceps",reps:"3 × 8–10",rir:"RIR 3–4",tempo:"2 × 10 kg",
+  img:[[CU+"1/15/Dumbbell-shoulder-press-1.png","Départ"],[CU+"a/a3/Dumbbell-shoulder-press-2.png","Haut"]],
+  how:"Assis, dossier vertical, abdominaux gainés pour ne pas cambrer le bas du dos. Haltères au niveau des oreilles, coudes légèrement en avant du plan du buste. Pousser vers le haut sans verrouiller sèchement les coudes.",
+  up:"+2 kg par haltère · version debout (plus de gainage)",
+  dn:"Dossier légèrement incliné · charge plus légère si l'épaule accroche en haut",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Dumbbell-shoulder-press-1.png"},
+
+ {n:"Tirage horizontal",mu:"Dos · biceps",reps:"3 × 8–10",rir:"RIR 3–4",tempo:"35–40 kg",
+  img:[[CU+"2/2d/Cable-seated-rows-1.png","Départ"],[CU+"4/4d/Cable-seated-rows-2.png","Tirage"]],
+  how:"Buste stable, quasi vertical — ne pas balancer d'avant en arrière. Tirer avec les coudes vers les hanches, omoplates serrées en fin de course, marquer 1 s. Relâcher en contrôle sans arrondir le bas du dos.",
+  up:"+5 kg · pause de 2 s en contraction",
+  dn:"Charge plus légère : le dos est le point faible actuel (3 tractions)",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Cable-seated-rows-1.png"},
+
+ {n:"Élévations latérales",mu:"Épaules (deltoïde moyen)",reps:"3 × 12–15",rir:"RIR 0–1",tempo:"2 × 5 kg",
+  img:[[CU+"f/fd/Dumbbell-lateral-raises-1.png","Départ"],[CU+"3/35/Dumbbell-lateral-raises-2.png","Haut"]],
+  how:"Debout, léger buste en avant, coudes à peine fléchis. Monter les haltères jusqu'à l'horizontale, poignets dans l'axe de l'avant-bras, descente contrôlée. Superset A avec l'extension triceps : enchaîner sans repos.",
+  up:"+1 kg seulement quand 15 reps sortent propres",
+  dn:"Charge plus légère. L'erreur la plus fréquente ici est le poids trop lourd : le trapèze prend le relais et le deltoïde ne travaille plus.",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Dumbbell-lateral-raises-1.png"},
+
+ {n:"Extension triceps poulie",mu:"Triceps",reps:"3 × 10–12",rir:"RIR 1",tempo:"15 kg",
+  img:[[CU+"7/74/Triceps-pushdown-1.gif","Départ"],[CU+"0/05/Triceps-pushdown-2.gif","Extension"]],
+  how:"Debout face à la poulie haute, coudes collés au buste et immobiles — seul l'avant-bras bouge. Extension complète en bas sans verrouiller brutalement, remontée contrôlée jusqu'à environ 90°. Superset B.",
+  up:"+2,5 kg · version corde pour plus d'amplitude en fin de course",
+  dn:"Charge plus légère si le coude est sensible : c'est un point de fragilité classique à 40 ans",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Triceps-pushdown-1.gif"},
+
+ {n:"Curl biceps haltères",mu:"Biceps",reps:"2 × 10–12",rir:"RIR 1",tempo:"2 × 8 kg",
+  img:[[CU+"d/d3/Standing-biceps-curl-1.gif","Départ"],[CU+"0/0a/Standing-biceps-curl-2.gif","Haut"]],
+  how:"Debout, coudes fixes le long du buste, pas d'élan de hanches. Monter en supination, descente contrôlée sur 2 s. Seulement 2 séries : le biceps a déjà travaillé au tirage horizontal.",
+  up:"+2 kg par haltère · curl barre EZ",
+  dn:"Curl marteau si le poignet ou le coude tire",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Standing-biceps-curl-1.gif"}
+];
+function fiches(arr,cible){
+  document.getElementById(cible).innerHTML=arr.map((e,i)=>`
+  <div class="ex">
+    <div class="exhd"><div class="no">${i<6?i+1:'★'}</div>
+      <div><div class="exnm">${e.n}</div></div>
+      <div class="exmu">${e.mu}</div></div>
+    <div class="shots">${e.img.map(g=>`
+      <div class="shot"><img src="${g[0]}" alt="${e.n} — ${g[1]}" loading="lazy"
+        onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<div class=ph>image indisponible<br>hors connexion</div>')">
+        <span class="cap">${g[1]}</span></div>`).join('')}</div>
+    <div class="exbd">
+      <div class="dose"><b>${e.reps}</b><b>${e.rir}</b><b>${e.tempo}</b></div>
+      <p class="how">${e.how}</p>
+      ${e.note?`<p class="how dim" style="font-size:11.5px">${e.note}</p>`:''}
+      <div class="pm">
+        <div class="up"><span class="t">Plus dur</span><span class="dim">${e.up}</span></div>
+        <div class="dn"><span class="t">Plus facile</span><span class="dim">${e.dn}</span></div>
+      </div>
+    </div>
+    <div class="credit">${e.cr} — <a href="${e.crl}" target="_blank" rel="noopener">Wikimedia Commons</a></div>
+  </div>`).join('');
+}
+fiches(EX1,'exgrid1');
+
+/* ---- tableau des charges ---- */
+const KG=[
+ ["Développé couché barre","45 kg","4 × 6–8","3–4","12 pompes → 1RM ≈ 73 kg (Epley) → 65 % · barre 20 + 2 × 12,5"],
+ ["Développé militaire haltères","2 × 10 kg","3 × 8–10","3–4","≈ 60 % du développé couché, minoré pour la semaine 1"],
+ ["Tirage horizontal","35–40 kg","3 × 8–10","3–4","Aucune base chiffrée — à caler dès la 1<sup>re</sup> série"],
+ ["Élévations latérales","2 × 5 kg","3 × 12–15","0–1","Petit muscle, bras de levier long : charge légère par principe"],
+ ["Extension triceps poulie","15 kg","3 × 10–12","1","Complément d'un mouvement déjà sollicité au développé"],
+ ["Curl biceps haltères","2 × 8 kg","2 × 10–12","1","Biceps déjà pré-fatigué par le tirage horizontal"]
+];
+document.getElementById('tb-kg').innerHTML=KG.map(r=>
+ `<tr><td class="name">${r[0]}</td><td class="num"><b class="acc">${r[1]}</b></td>
+  <td class="num">${r[2]}</td><td class="num dim">${r[3]}</td><td class="dim">${r[4]}</td></tr>`).join('');
+
+/* ======================================================================
+   SÉANCE ACTIVE — Full Body, phase 1 (1 séance/semaine)
+   ====================================================================== */
+const SP="https://commons.wikimedia.org/wiki/Special:FilePath/";
+
+const seanceFB=[{n:"Séance unique — Full Body",t:"corps entier",d:58,ex:[
+ ["Squat","3 × 6–8","3–4","2–3 min"],["Tirage horizontal","3 × 8–10","3–4","2 min"],
+ ["Développé couché barre","3 × 6–8","3–4","2–3 min"],["Soulevé de terre roumain","3 × 6–8","3–4","2–3 min"],
+ ["Tirage vertical","3 × 6–10","3–4","2 min"],["Développé militaire haltères","2 × 8–10","3–4","superset"],
+ ["Gainage planche","2 × 30–45 s","—","90 s / tour"]]}];
+document.getElementById('seanceFB').innerHTML=seanceFB.map(s=>`
+  <div class="seance">
+    <div class="hd"><span class="nm">${s.n}</span>
+      <span><span class="pill">${s.t}</span> <span class="pill b">≈ ${s.d} min</span></span></div>
+    <table><thead><tr><th>Exercice</th><th class="num">Séries × reps</th>
+      <th class="num">RIR</th><th class="num">Repos</th></tr></thead>
+    <tbody>${s.ex.map(e=>`<tr><td>${e[0]}</td><td class="num">${e[1]}</td>
+      <td class="num dim">${e[2]}</td><td class="num dim">${e[3]}</td></tr>`).join('')}</tbody></table>
+  </div>`).join('');
+
+const tlFB=[
+ ["10 min","Échauffement","Vélo/marche · rotations épaules-hanches · squats et fentes à vide · approches squat + développé",0],
+ ["9 min","Squat","3 × 6–8, repos 2–3 min",1],
+ ["7 min","Tirage horizontal","3 × 8–10, repos 2 min",0],
+ ["9 min","Développé couché","3 × 6–8, repos 2–3 min",1],
+ ["9 min","Soulevé de terre roumain","3 × 6–8, repos 2–3 min",1],
+ ["7 min","Tirage vertical","3 × 6–10, repos 2 min",0],
+ ["7 min","Superset — militaire + gainage","2 tours, 90 s de repos après chaque tour",0],
+ ["≈58 min","Total","19 séries dures · tout le corps couvert",0]
+];
+document.getElementById('tl-fb').innerHTML=tlFB.map(r=>
+  `<div class="row${r[3]?' hi':''}"><div class="dur${r[1]==='Total'?' acc':''}">${r[0]}</div>
+   <div class="ph">${r[1]}</div><div class="ct">${r[2]}</div></div>`).join('');
+
+const EXFB=[
+ {n:"Squat",mu:"Quadriceps · fessiers · gainage",reps:"3 × 6–8",rir:"RIR 3–4",tempo:"à calibrer",
+  img:[[SP+"Squats-1.png","Départ"],[SP+"Squats-2.png","Bas"]],
+  how:"Barre sur le haut du dos (ou haltère tenu devant la poitrine si la position barre n'est pas encore confortable), pieds largeur d'épaules, pointes légèrement ouvertes. Pousser les hanches en arrière en gardant le buste aussi droit que possible, descendre aussi bas que la mobilité le permet. Remonter en poussant dans le sol, genoux alignés avec les pieds.",
+  up:"+5 kg quand 8 reps sortent à RIR ≥ 2 sur les 3 séries",
+  dn:"Squat gobelet ou amplitude réduite le temps que la mobilité de cheville s'installe",
+  cr:"Wikimedia Commons — licence sur la page du fichier",crl:"https://commons.wikimedia.org/wiki/File:Squats-1.png"},
+
+ {n:"Tirage horizontal",mu:"Dos · biceps",reps:"3 × 8–10",rir:"RIR 3–4",tempo:"35–40 kg",
+  img:[[CU+"2/2d/Cable-seated-rows-1.png","Départ"],[CU+"4/4d/Cable-seated-rows-2.png","Tirage"]],
+  how:"Buste stable, quasi vertical — ne pas balancer d'avant en arrière. Tirer avec les coudes vers les hanches, omoplates serrées en fin de course, marquer 1 s. Relâcher en contrôle sans arrondir le bas du dos.",
+  up:"+5 kg · pause de 2 s en contraction",
+  dn:"Charge plus légère : le dos est le point faible actuel (3 tractions)",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Cable-seated-rows-1.png"},
+
+ {n:"Développé couché barre",mu:"Pectoraux · triceps · épaules",reps:"3 × 6–8",rir:"RIR 3–4",tempo:"45 kg",
+  img:[[CU+"a/a8/Bench-press-1.png","Départ"],[CU+"f/f7/Bench-press-2.png","Bas"]],
+  how:"Allongé, omoplates serrées et basses, pieds ancrés au sol. Descendre la barre au niveau du bas des pectoraux, coudes à environ 45° du buste. Ne pas rebondir sur la poitrine ; contact léger puis pousser.",
+  up:"+2,5 kg quand 8 reps sortent à RIR ≥ 2 sur les 3 séries",
+  dn:"Barre à vide ou haltères si l'épaule tire",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Bench-press-1.png"},
+
+ {n:"Soulevé de terre roumain",mu:"Ischios-fessiers · gainage",reps:"3 × 6–8",rir:"RIR 3–4",tempo:"très léger",
+  img:[[SP+"Romanian-deadlift-1.png","Départ"],[SP+"Romanian-deadlift-2.png","Bas"]],
+  how:"Barre au contact des cuisses, genoux à peine fléchis et fixes. Pousser les hanches en arrière en gardant le dos plat et la barre proche des jambes, jusqu'à sentir un étirement net des ischios (environ mi-tibia). Remonter en poussant les hanches vers l'avant, sans creuser ni arrondir le bas du dos. C'est la charnière de hanche : elle manquait entièrement au circuit du 16/08.",
+  up:"+5 kg quand la sensation d'étirement reste nette et le dos plat sur les 3 séries",
+  dn:"Charge très légère voire à vide la première séance : la technique prime sur la charge",
+  note:"Mouvement le plus technique de la séance — ne pas hésiter à demander un avis en salle sur la position du dos en semaine 1.",
+  cr:"Wikimedia Commons — licence sur la page du fichier",crl:"https://commons.wikimedia.org/wiki/File:Romanian-deadlift-1.png"},
+
+ {n:"Tirage vertical",mu:"Dos · biceps",reps:"3 × 6–10",rir:"RIR 3–4",tempo:"à calibrer",
+  img:[[SP+"Wide-grip-lat-pull-down-1.gif","Tirage"]],
+  how:"À la poulie haute, prise large, buste légèrement incliné en arrière sans excès. Tirer la barre vers le haut de la poitrine en amenant les coudes vers le bas et l'arrière, omoplates serrées en fin de course. Remonter en contrôle sans laisser les épaules remonter vers les oreilles.",
+  up:"Charge en hausse jusqu'à 10 reps propres à RIR ≥ 2 · puis remplacer une série par des tractions réelles dès qu'elles sortent (max actuel : 3 reps)",
+  dn:"Charge plus légère, amplitude complète prioritaire sur la charge",
+  cr:"Wikimedia Commons — licence sur la page du fichier",crl:"https://commons.wikimedia.org/wiki/File:Wide-grip-lat-pull-down-1.gif"},
+
+ {n:"Développé militaire haltères",mu:"Épaules · triceps",reps:"2 × 8–10",rir:"RIR 3–4",tempo:"2 × 10 kg",
+  img:[[CU+"1/15/Dumbbell-shoulder-press-1.png","Départ"],[CU+"a/a3/Dumbbell-shoulder-press-2.png","Haut"]],
+  how:"Assis, dossier vertical, abdominaux gainés pour ne pas cambrer le bas du dos. Haltères au niveau des oreilles, coudes légèrement en avant du plan du buste. Pousser vers le haut sans verrouiller sèchement les coudes. Superset A : enchaîner directement sur le gainage, sans repos, 90 s après chaque tour.",
+  up:"+2 kg par haltère",
+  dn:"Dossier légèrement incliné · charge plus légère si l'épaule accroche en haut",
+  cr:"Everkinetic, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Dumbbell-shoulder-press-1.png"},
+
+ {n:"Gainage planche",mu:"Gainage",reps:"2 × 30–45 s",rir:"—",tempo:"poids du corps",
+  img:[[CU+"thumb/e/ee/Plank.jpg/960px-Plank.jpg","Position tenue"]],
+  how:"Coudes sous les épaules, corps aligné, fessiers et abdominaux contractés, bassin en légère rétroversion. Arrêter dès que le bas du dos s'affaisse. Superset B : directement après le développé militaire.",
+  up:"Lever un pied · extension alternée bras/jambe",
+  dn:"Genoux au sol",
+  cr:"Jaykayfit, CC BY-SA 3.0",crl:"https://commons.wikimedia.org/wiki/File:Plank.jpg"}
+];
+fiches(EXFB,'exgridFB');
+
+const KGFB=[
+ ["Squat","à calibrer en séance","3 × 6–8","3–4","Aucune base chiffrée — départ prudent, technique avant charge"],
+ ["Tirage horizontal","35–40 kg","3 × 8–10","3–4","Repris du programme à 4 séances — aucune base chiffrée non plus, à caler"],
+ ["Développé couché barre","45 kg","3 × 6–8","3–4","12 pompes → 1RM ≈ 73 kg (Epley) → 65 % · barre 20 + 2 × 12,5"],
+ ["Soulevé de terre roumain","très léger, à calibrer","3 × 6–8","3–4","Mouvement technique — priorité au dos plat, pas à la charge"],
+ ["Tirage vertical","à calibrer en séance","3 × 6–10","3–4","Partir d'une charge assistée qui permette 6 reps propres"],
+ ["Développé militaire haltères","2 × 10 kg","2 × 8–10","3–4","≈ 60 % du développé couché, minoré pour la séance 1"],
+ ["Gainage planche","poids du corps","2 × 30–45 s","—","Arrêter dès que le bas du dos s'affaisse"]
+];
+document.getElementById('tb-kg-fb').innerHTML=KGFB.map(r=>
+ `<tr><td class="name">${r[0]}</td><td class="num"><b class="acc">${r[1]}</b></td>
+  <td class="num">${r[2]}</td><td class="num dim">${r[3]}</td><td class="dim">${r[4]}</td></tr>`).join('');
+
+/* ======================================================================
+   MODE PAS-À-PAS — moteur, enregistrement, export
+   ====================================================================== */
+
+/* ---- définition des séances : une étape = un écran ---- */
+function stepsJ1(){
+  const S=[{k:'warm',n:"Échauffement",dur:600,
+    cue:"5 min de vélo ou de marche rapide, puis rotations d'épaules et passages de bâton. Termine par les approches au développé : barre à vide × 10, 30 kg × 5, 40 kg × 3.",
+    sub:"10 min · à 40 ans les tendons s'adaptent plus lentement que les muscles"}];
+  const push=(o,ns,rest)=>{for(let i=1;i<=ns;i++)S.push(Object.assign({k:'set',serie:i,ns,rest},o));};
+  push({n:"Développé couché barre",kg:45,kgl:"45 kg",reps:"6–8",rt:7,rir:"3–4",mu:"Pectoraux",
+    img:["a/a8/Bench-press-1.png","f/f7/Bench-press-2.png"],
+    cue:"Omoplates serrées et basses, pieds ancrés. Barre au bas des pectoraux, coudes à ~45°. Pas de rebond sur la poitrine."},4,150);
+  push({n:"Développé militaire haltères",kg:10,kgl:"2 × 10 kg",reps:"8–10",rt:9,rir:"3–4",mu:"Épaules",
+    img:["1/15/Dumbbell-shoulder-press-1.png","a/a3/Dumbbell-shoulder-press-2.png"],
+    cue:"Assis, dossier vertical, abdominaux gainés — ne pas cambrer. Coudes légèrement en avant du buste."},3,120);
+  push({n:"Tirage horizontal",kg:37.5,kgl:"35–40 kg",reps:"8–10",rt:9,rir:"3–4",mu:"Dos",
+    img:["2/2d/Cable-seated-rows-1.png","4/4d/Cable-seated-rows-2.png"],
+    cue:"Buste stable, tirer avec les coudes vers les hanches, omoplates serrées 1 s. Relâcher sans arrondir le dos."},3,120);
+  for(let t=1;t<=3;t++){
+    S.push({k:'set',n:"Élévations latérales",kg:5,kgl:"2 × 5 kg",reps:"12–15",rt:13,rir:"0–1",mu:"Épaules",
+      serie:t,ns:3,rest:0,ss:"A",img:["f/fd/Dumbbell-lateral-raises-1.png","3/35/Dumbbell-lateral-raises-2.png"],
+      cue:"Superset A — enchaîne directement sur le triceps, sans repos. Léger buste en avant, coudes à peine fléchis, monter à l'horizontale. Trop lourd = le trapèze prend le relais."});
+    S.push({k:'set',n:"Extension triceps poulie",kg:15,kgl:"15 kg",reps:"10–12",rt:11,rir:"1",mu:"Triceps",
+      serie:t,ns:3,rest:90,ss:"B",img:["7/74/Triceps-pushdown-1.gif","0/05/Triceps-pushdown-2.gif"],
+      cue:"Superset B — coudes collés au buste et immobiles, seul l'avant-bras bouge. Extension complète sans verrouiller sèchement."});
+  }
+  push({n:"Curl biceps haltères",kg:8,kgl:"2 × 8 kg",reps:"10–12",rt:11,rir:"1",mu:"Biceps",
+    img:["d/d3/Standing-biceps-curl-1.gif","0/0a/Standing-biceps-curl-2.gif"],
+    cue:"Coudes fixes le long du buste, pas d'élan de hanches, descente contrôlée sur 2 s."},2,60);
+  S.push({k:'end'});
+  return S;
+}
+function stepsSS(){
+  const E=[
+   {n:"Pompes",reps:"8–12",rt:10,mu:"Pectoraux",img:["9/96/Push-ups-1.png","1/1a/Push-ups-2.png"],
+    cue:"Corps aligné cheville-hanche-épaule, coudes à ~45°. Descendre poitrine près du sol."},
+   {n:"Inverted row pieds surélevés",reps:"6–10",rt:8,mu:"Dos",img:["thumb/f/f4/Man_performing_inverted_row_with_suspension_trainer.jpg/960px-Man_performing_inverted_row_with_suspension_trainer.jpg"],
+    cue:"Sous une table solide, corps gainé, tirer la poitrine vers la prise, omoplates serrées."},
+   {n:"Fentes avant alternées",reps:"8–10 paires",rt:9,mu:"Quadriceps",img:["5/55/Lunges-1.png","5/52/Lunges-2.png"],
+    cue:"Genou arrière vers le sol sans le toucher, buste droit. Une paire = droite + gauche."},
+   {n:"Pompes piquées",reps:"6–10",rt:8,mu:"Épaules",img:["thumb/4/47/Handstand_pushup.jpg/960px-Handstand_pushup.jpg"],
+    cue:"Départ en V, hanches hautes, tête entre les bras. Amener le sommet du crâne vers le sol."},
+   {n:"Pont fessier une jambe",reps:"10–12 / côté",rt:11,mu:"Ischios-Fessiers",img:["thumb/3/34/Glute-bridge.png/960px-Glute-bridge.png"],
+    cue:"Monter le bassin en serrant le fessier, alignement épaules-hanches-genou, pause 1 s."},
+   {n:"Gainage planche",reps:"30–45 s",rt:40,mu:"Gainage",img:["thumb/e/ee/Plank.jpg/960px-Plank.jpg"],
+    cue:"Coudes sous les épaules, fessiers et abdos contractés. Arrêter dès que le bas du dos s'affaisse."}];
+  const S=[{k:'warm',n:"Échauffement",dur:120,
+    cue:"Cercles de bras · 10 squats à vide · 5 pompes lentes · 10 fentes sans à-coup.",sub:"2 min"}];
+  for(let t=1;t<=2;t++) E.forEach((e,i)=>S.push(Object.assign({k:'set',serie:t,ns:2,
+    rest:(i===5&&t===1)?60:15,kg:0,kgl:"poids du corps",rir:"2"},e)));
+  S.push({k:'end'});
+  return S;
+}
+function stepsFB(){
+  const S=[{k:'warm',n:"Échauffement",dur:600,
+    cue:"8–10 min : vélo ou marche rapide, rotations d'épaules et de hanches, 10 squats à vide, 10 fentes sans à-coup. Puis approches spécifiques : squat à vide × 10, développé barre à vide × 10.",
+    sub:"10 min · à 40 ans les tendons s'adaptent plus lentement que les muscles"}];
+  const push=(o,ns,rest)=>{for(let i=1;i<=ns;i++)S.push(Object.assign({k:'set',serie:i,ns,rest},o));};
+  push({n:"Squat",kg:0,kgl:"à calibrer",reps:"6–8",rt:7,rir:"3–4",mu:"Quadriceps",
+    img:[SP+"Squats-1.png",SP+"Squats-2.png"],
+    cue:"Barre sur le haut du dos (ou gobelet), pieds largeur d'épaules. Pousser les hanches en arrière, buste droit, descendre aussi bas que la mobilité permet. Remonter genoux alignés avec les pieds."},3,150);
+  push({n:"Tirage horizontal",kg:37.5,kgl:"35–40 kg",reps:"8–10",rt:9,rir:"3–4",mu:"Dos",
+    img:["2/2d/Cable-seated-rows-1.png","4/4d/Cable-seated-rows-2.png"],
+    cue:"Buste stable, tirer avec les coudes vers les hanches, omoplates serrées 1 s. Relâcher sans arrondir le dos."},3,120);
+  push({n:"Développé couché barre",kg:45,kgl:"45 kg",reps:"6–8",rt:7,rir:"3–4",mu:"Pectoraux",
+    img:["a/a8/Bench-press-1.png","f/f7/Bench-press-2.png"],
+    cue:"Omoplates serrées et basses, pieds ancrés. Barre au bas des pectoraux, coudes à ~45°. Pas de rebond sur la poitrine."},3,150);
+  push({n:"Soulevé de terre roumain",kg:0,kgl:"très léger",reps:"6–8",rt:7,rir:"3–4",mu:"Ischios-Fessiers",
+    img:[SP+"Romanian-deadlift-1.png",SP+"Romanian-deadlift-2.png"],
+    cue:"Barre au contact des cuisses, genoux à peine fléchis et fixes. Pousser les hanches en arrière, dos plat, jusqu'à l'étirement net des ischios. Remonter en poussant les hanches vers l'avant."},3,150);
+  push({n:"Tirage vertical",kg:0,kgl:"à calibrer",reps:"6–10",rt:8,rir:"3–4",mu:"Dos",
+    img:[SP+"Wide-grip-lat-pull-down-1.gif"],
+    cue:"Prise large à la poulie haute, buste légèrement incliné en arrière. Tirer vers le haut de la poitrine, coudes vers le bas et l'arrière, omoplates serrées."},3,120);
+  for(let t=1;t<=2;t++){
+    S.push({k:'set',n:"Développé militaire haltères",kg:10,kgl:"2 × 10 kg",reps:"8–10",rt:9,rir:"3–4",mu:"Épaules",
+      serie:t,ns:2,rest:0,ss:"A",img:["1/15/Dumbbell-shoulder-press-1.png","a/a3/Dumbbell-shoulder-press-2.png"],
+      cue:"Superset A — enchaîne directement sur le gainage, sans repos. Dossier vertical, abdos gainés, coudes légèrement en avant."});
+    S.push({k:'set',n:"Gainage planche",kg:0,kgl:"poids du corps",reps:"30–45 s",rt:40,rir:"—",mu:"Gainage",
+      serie:t,ns:2,rest:90,ss:"B",img:["thumb/e/ee/Plank.jpg/960px-Plank.jpg"],
+      cue:"Superset B — coudes sous les épaules, corps aligné. Arrêter dès que le bas du dos s'affaisse."});
+  }
+  S.push({k:'end'});
+  return S;
+}
+const SESS={
+  fb:{id:"fb",ttl:"Séance — Full Body",carnet:"Full Body",steps:stepsFB()},
+  j1:{id:"j1",ttl:"Jour 1 — Upper A (phase 2)",carnet:"Upper A",steps:stepsJ1()},
+  ss:{id:"ss",ttl:"15 min sans salle",carnet:"Autre",note:"15 min sans salle",steps:stepsSS()}
+};
+
+/* ---- état + persistance ---- */
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},
+          set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+          del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let W={on:false,sid:null,i:0,mode:'work',t0:null,el:0,log:[],rend:0};
+let wtick=null;
+
+function wSave(){ if(W.sid) LS.set('st_cur',W); }
+function wSteps(){ return SESS[W.sid].steps; }
+function wCur(){ return wSteps()[W.i]; }
+
+/* ---- rendu d'une étape ---- */
+function wImg(paths){
+  return `<div class="wzimg">${paths.map(p=>`<img src="${/^https?:/.test(p)?p:CU+p}" alt="" loading="eager"
+    onerror="this.style.display='none'">`).join('')}</div>`;
+}
+function wLabel(s){
+  if(s.k==='warm')return "Échauffement";
+  if(s.k==='end') return "Fin de séance";
+  return s.n+(s.ns>1?` — série ${s.serie}/${s.ns}`:'');
+}
+function wRender(){
+  const st=wSteps(), s=wCur(), body=$('wz-body'), nx=$('wz-next');
+  const total=st.length-1;
+  $('wz-ttl').textContent=SESS[W.sid].ttl;
+  $('wz-pos').textContent=`étape ${Math.min(W.i+1,total)} sur ${total}`;
+  $('wz-pb').style.width=(W.i/total*100)+'%';
+  $('wz-back').style.visibility=W.i>0?'visible':'hidden';
+
+  if(s.k==='end'){ wRecap(); return; }
+
+  if(W.mode==='rest'){
+    const n=st[W.i+1];
+    body.innerHTML=`<div class="wzlbl">Repos</div>
+      <div class="wzcount" id="wz-cd">${mmss(W.rend)}</div>
+      <div class="wzedit">
+        <label><span class="k">Charge réalisée (kg)</span>
+          <input id="wz-kg" type="number" inputmode="decimal" step="0.5" value="${W.lastKg??0}"></label>
+        <label><span class="k">Reps réalisées</span>
+          <input id="wz-rp" type="number" inputmode="numeric" value="${W.lastRp??0}"></label>
+      </div>
+      <div class="wzcue dim">Corrige ici si tu n'as pas fait exactement ce qui était prévu — c'est ce
+        qui sera enregistré. Si tu finis avec plus de 4 reps en réserve, monte la charge de 10 % à la série suivante.</div>`;
+    $('wz-kg').oninput=$('wz-rp').oninput=()=>{
+      const L=W.log[W.log.length-1];
+      if(L){L.kg=parseFloat($('wz-kg').value)||0;L.reps=parseInt($('wz-rp').value)||0;wSave();}
+    };
+    $('wz-do').textContent="Passer au suivant";
+    $('wz-do').className="wzb big g";
+    nx.innerHTML=n?`<span class="nl">Ensuite</span><span class="nt">${wLabel(n)}</span>
+      <span class="nk">${n.kgl||''}</span>`:'';
+    return;
+  }
+
+  $('wz-do').className="wzb big";
+  if(s.k==='warm'){
+    body.innerHTML=`<div class="wzname">${s.n}</div><div class="wzsub">${s.sub}</div>
+      <div class="wzcue">${s.cue}</div>`;
+    $('wz-do').textContent="C'est fait";
+  } else {
+    body.innerHTML=`${wImg(s.img)}
+      <div><div class="wzname">${s.n}</div>
+        <div class="wzsub">${s.mu}${s.ss?` · superset ${s.ss}`:''}</div></div>
+      <div class="wzstats">
+        <div class="wzstat hi"><div class="k">Charge</div><div class="v">${s.kgl}</div></div>
+        <div class="wzstat"><div class="k">Reps</div><div class="v">${s.reps}</div></div>
+        <div class="wzstat"><div class="k">RIR</div><div class="v">${s.rir}</div></div>
+        <div class="wzstat"><div class="k">Série</div><div class="v">${s.serie}/${s.ns}</div></div>
+      </div>
+      <div class="wzcue">${s.cue}</div>`;
+    $('wz-do').textContent="Série faite";
+  }
+  const n=st[W.i+1];
+  nx.innerHTML=n?`<span class="nl">Ensuite</span><span class="nt">${wLabel(n)}</span>
+    <span class="nk">${n.kgl||''}</span>`:'<span class="nl">Dernière étape</span>';
+}
+
+/* ---- récapitulatif de fin ---- */
+function wRecap(){
+  const S=SESS[W.sid], d=new Date();
+  const dt=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  const rows=W.log;
+  const tonnage=rows.reduce((a,r)=>a+(r.kg*r.reps||0),0);
+  $('wz-body').innerHTML=`
+    <div class="wzname">Séance terminée</div>
+    <div class="wzsub">${S.ttl} · ${dt} · ${mmss(W.el)} · ${rows.length} séries · ${tonnage>0?Math.round(tonnage)+' kg de tonnage':'poids du corps'}</div>
+    <table class="recap"><thead><tr><th>Exercice</th><th class="num">Sér.</th>
+      <th class="num">Charge</th><th class="num">Reps</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${r.exo}</td><td class="num">${r.serie}</td>
+        <td class="num">${r.kg?r.kg+' kg':'—'}</td><td class="num"><b>${r.reps}</b></td></tr>`).join('')}
+    </tbody></table>
+    <div class="wzcue">
+      <b>Reporter dans le carnet</b> — onglet Séances. Indique la première ligne vide, copie, puis colle
+      dans la cellule A de cette ligne : les formules des colonnes B, E, J et K sont incluses.
+      <div style="display:flex;gap:9px;align-items:center;margin:9px 0">
+        <span class="dim" style="font-size:12px">Coller à la ligne</span>
+        <input id="wz-row" type="number" value="12" style="width:76px;background:#0c1219;border:1px solid var(--line);
+          color:var(--txt);border-radius:7px;padding:6px 9px;font-family:inherit;font-size:15px;font-weight:700">
+        <button class="btn p" id="wz-copy">Copier</button>
+        <button class="btn" id="wz-csv">CSV</button>
+      </div>
+      <textarea class="ta" id="wz-tsv" readonly></textarea>
+    </div>`;
+  const build=()=>{
+    const r0=parseInt($('wz-row').value)||12;
+    $('wz-tsv').value=rows.map((r,i)=>{
+      const R=r0+i;
+      return [dt,`=IF($A${R}="","",INT(($A${R}-Guide!$B$4)/7)+1)`,S.carnet,r.exo,
+        `=IF($D${R}="","",IFERROR(INDEX(Exercices!$B$2:$B$36,MATCH($D${R},Exercices!$A$2:$A$36,0)),"À AJOUTER"))`,
+        r.serie, r.kg||'', r.reps, r.rir||'',
+        `=IF(OR($G${R}="",$H${R}=""),"",ROUND($G${R}*(1+$H${R}/30),1))`,
+        `=IF(OR($G${R}="",$H${R}=""),"",$G${R}*$H${R})`, S.note||''].join('\t');
+    }).join('\n');
+  };
+  build();
+  $('wz-row').oninput=build;
+  $('wz-copy').onclick=()=>{
+    const t=$('wz-tsv'); t.select(); t.setSelectionRange(0,99999);
+    (navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject())
+      .then(()=>{$('wz-copy').textContent='Copié ✓';},()=>{document.execCommand('copy');$('wz-copy').textContent='Copié ✓';});
+  };
+  $('wz-csv').onclick=()=>{
+    const csv='Date;Séance;Exercice;Série;Charge (kg);Reps;RIR\n'+
+      rows.map(r=>[dt,S.carnet,r.exo,r.serie,r.kg||'',r.reps,r.rir||''].join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download='seance-'+S.id+'-'+d.toISOString().slice(0,10)+'.csv'; a.click();
+  };
+  const cfg=syncCfg();
+  $('wz-next').innerHTML= cfg.url
+    ? '<span class="nl">Au clic sur Terminer</span><span class="nt">envoi automatique dans le carnet Google Sheets</span>'
+    : '<span class="nl">Enregistrée sur ce téléphone</span>'+
+      `<span class="nt">Historique : ${LS.get('st_hist',[]).length+1} séance(s)</span>`;
+  $('wz-do').textContent="Fermer et enregistrer";
+  $('wz-do').className="wzb big g";
+}
+
+/* ---- navigation ---- */
+function wTickStart(){
+  clearInterval(wtick);
+  wtick=setInterval(()=>{
+    if(W.mode==='rest'&&W.rend>0){
+      W.rend--;
+      const c=$('wz-cd');
+      if(c){ c.textContent=W.rend>0?mmss(W.rend):'GO'; if(W.rend===0){c.classList.add('fin');beep();} }
+    }
+    if(W.t0){ W.el=Math.floor((Date.now()-W.t0)/1000); $('wz-clk').textContent=mmss(W.el); }
+    wSave();
+  },1000);
+}
+function wNext(){
+  const s=wCur();
+  if(s.k==='end'){ wFinish(); return; }
+  if(W.mode==='work'){
+    if(s.k==='set'){
+      W.log.push({exo:s.n,serie:s.serie,kg:s.kg,reps:s.rt,rir:(s.rir||'').replace('–','-'),mu:s.mu});
+      W.lastKg=s.kg; W.lastRp=s.rt;
+      if(s.rest>0){ W.mode='rest'; W.rend=s.rest; wSave(); wRender(); return; }
+    }
+    W.i++; W.mode='work';
+  } else { W.mode='work'; W.i++; }
+  if(W.i>=wSteps().length) W.i=wSteps().length-1;
+  wSave(); wRender();
+}
+function wBack(){
+  if(W.mode==='rest'){ W.mode='work'; W.log.pop(); }
+  else if(W.i>0){ W.i--; if(wCur().k==='set') W.log.pop(); }
+  wSave(); wRender();
+}
+function wOpen(sid,resume){
+  W.sid=sid; W.on=true;
+  if(!resume){ W.i=0; W.mode='work'; W.log=[]; W.el=0; W.rend=0; }
+  W.t0=Date.now()-W.el*1000;
+  $('wz').classList.add('on');
+  document.body.style.overflow='hidden';
+  wTickStart(); wRender(); wSave();
+  if(navigator.wakeLock) navigator.wakeLock.request('screen').then(l=>W._wl=l).catch(()=>{});
+}
+function wClose(){
+  W.on=false; clearInterval(wtick);
+  $('wz').classList.remove('on'); document.body.style.overflow='';
+  if(W._wl){try{W._wl.release()}catch(e){} W._wl=null;}
+}
+function wFinish(){
+  const h=LS.get('st_hist',[]);
+  const rec={sid:W.sid,date:new Date().toISOString(),dur:W.el,log:W.log};
+  h.push(rec); LS.set('st_hist',h); LS.del('st_cur');
+  syncQueue(rec);
+  W.log=[]; W.i=0; W.el=0;
+  wClose(); renderHist();
+}
+
+/* ======================================================================
+   SYNCHRONISATION vers le carnet Google Sheets
+   La séance part vers un point d'entrée Google Apps Script qui l'écrit
+   dans l'onglet Séances. Hors réseau, elle attend dans une file locale.
+   ====================================================================== */
+function syncCfg(){ return LS.get('st_sync',{url:'',key:''}); }
+function syncQueue(rec){
+  const q=LS.get('st_queue',[]);
+  q.push({id:rec.date,sid:rec.sid,date:rec.date.slice(0,10),
+    seance:SESS[rec.sid]?SESS[rec.sid].carnet:'Autre',
+    note:(SESS[rec.sid]&&SESS[rec.sid].note)||'',
+    rows:rec.log.map(r=>[r.exo,r.serie,r.kg||'',r.reps,r.rir||''])});
+  LS.set('st_queue',q); syncFlush();
+}
+let syncing=false;
+async function syncFlush(){
+  const c=syncCfg(), q=LS.get('st_queue',[]);
+  if(syncing||!q.length||!c.url){ syncStatus(); return; }
+  syncing=true; syncStatus('envoi…');
+  const rest=[];
+  for(const item of q){
+    let ok=false, msg='';
+    const body=JSON.stringify(Object.assign({key:c.key},item));
+    try{
+      // Content-Type simple : évite la requête préalable CORS.
+      const r=await fetch(c.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body});
+      const j=await r.json();
+      ok=!!j.ok; msg=j.err||('ligne '+j.ligne);
+    }catch(e){
+      // La réponse n'a pas pu être lue (CORS). On renvoie en aveugle :
+      // l'écriture aboutit, seule la confirmation manque.
+      try{
+        await fetch(c.url,{method:'POST',mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},body});
+        ok=true; msg='envoyée (confirmation impossible à lire)';
+      }catch(e2){ ok=false; msg='hors réseau'; }
+    }
+    if(ok){ const s=LS.get('st_sent',[]); s.push({id:item.id,at:Date.now(),msg}); LS.set('st_sent',s); }
+    else rest.push(item);
+  }
+  LS.set('st_queue',rest); syncing=false; syncStatus(); renderHist();
+}
+function syncStatus(txt){
+  const el=$('syncst'); if(!el)return;
+  const c=syncCfg(), q=LS.get('st_queue',[]), s=LS.get('st_sent',[]);
+  if(txt){ el.innerHTML=`<span class="pill b">${txt}</span>`; return; }
+  if(!c.url){ el.innerHTML='<span class="pill">non configuré — les séances restent sur cet appareil</span>'; return; }
+  el.innerHTML = q.length
+    ? `<span class="pill" style="background:#3a2d12;color:var(--n2)">${q.length} séance(s) en attente d'envoi</span>`
+    : `<span class="pill" style="background:#17392c;color:var(--n4)">à jour — ${s.length} séance(s) envoyée(s)</span>`;
+}
+function syncInit(){
+  const c=syncCfg();
+  if($('sync-url')){ $('sync-url').value=c.url; $('sync-key').value=c.key; }
+  syncStatus();
+  if($('sync-save')) $('sync-save').onclick=()=>{
+    LS.set('st_sync',{url:$('sync-url').value.trim(),key:$('sync-key').value.trim()});
+    syncStatus('enregistré'); setTimeout(syncFlush,400);
+  };
+  if($('sync-now')) $('sync-now').onclick=()=>syncFlush();
+  window.addEventListener('online',syncFlush);
+  syncFlush();
+}
+syncInit();
+$('wz-do').onclick=wNext;
+$('wz-back').onclick=wBack;
+$('wz-x').onclick=()=>{ wSave(); wClose(); };
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>wOpen(b.dataset.go,false));
+
+/* ---- reprise d'une séance interrompue ---- */
+(function resume(){
+  const c=LS.get('st_cur',null);
+  if(!c||!c.sid||!SESS[c.sid]||(!c.log.length&&c.i===0))return;
+  const b=document.createElement('button');
+  b.className='golaunch'; b.style.borderColor='#7a5a22'; b.style.background='#241d10';
+  b.innerHTML=`<div><div class="gl1">Reprendre la séance en cours</div>
+    <div class="gl2">${SESS[c.sid].ttl} · étape ${c.i+1} · ${c.log.length} séries déjà faites</div></div>
+    <div class="glgo" style="background:var(--n2)">▶ Reprendre</div>`;
+  b.onclick=()=>{ W=Object.assign(W,c); wOpen(c.sid,true); };
+  const hostMap={j1:'j1-live',ss:'sans-apercu',fb:'seance-apercu'};
+  const host=document.querySelector('#s-'+(hostMap[c.sid]||'sans-apercu'));
+  if(host) host.insertBefore(b,host.firstChild);
+})();
+
+/* ---- historique local ---- */
+function renderHist(){
+  const el=$('hist'); if(!el)return;
+  const h=LS.get('st_hist',[]).slice().reverse();
+  if(!h.length){ el.innerHTML='<p class="how dim">Aucune séance enregistrée sur cet appareil pour l\'instant.</p>'; return; }
+  el.innerHTML=`<table><thead><tr><th>Date</th><th>Séance</th><th class="num">Durée</th>
+    <th class="num">Séries</th><th class="num">Tonnage</th></tr></thead><tbody>`+
+    h.map(s=>{const d=new Date(s.date);
+      const t=s.log.reduce((a,r)=>a+(r.kg*r.reps||0),0);
+      return `<tr><td>${d.toLocaleDateString('fr-FR')}</td><td>${SESS[s.sid]?SESS[s.sid].ttl:s.sid}</td>
+        <td class="num">${mmss(s.dur)}</td><td class="num">${s.log.length}</td>
+        <td class="num">${t?Math.round(t)+' kg':'—'}</td></tr>`;}).join('')+'</tbody></table>';
+}
+renderHist();
+
+/* ================= installation / hors connexion ================= */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+/* ================= import du carnet ================= */
+document.getElementById('fx').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f)return;
+  const msg=document.getElementById('fxmsg'), rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      const sea=XLSX.utils.sheet_to_json(wb.Sheets['Séances']||{},{defval:null}).filter(r=>r['Exercice']);
+      const best={};
+      sea.forEach(r=>{const v=Number(r['1RM estimé (kg)']);
+        if(!isNaN(v)&&v>0){const k=r['Exercice'];best[k]=Math.max(best[k]||0,v);}});
+      const map={"Squat":"squat","Développé couché barre":"bench","Soulevé de terre":"dead"};
+      Object.keys(map).forEach(k=>{ if(best[k]){
+        const st=stats.find(s=>s.k===map[k]); if(st){st.v=Math.round(best[k]);st.est=false;} }});
+      const t=XLSX.utils.sheet_to_json(wb.Sheets['Tests']||{},{defval:null});
+      const pick=(lbl,key,est)=>{const l=t.filter(r=>r['Test']===lbl&&typeof r['Résultat']==='number');
+        if(l.length){const st=stats.find(s=>s.k===key); if(st){st.v=l[l.length-1]['Résultat']; st.est=!!est;}}};
+      pick("Pompes strictes","pompes");
+      pick("Tractions pronation","tract");
+      pick("Préhension (dynamomètre)","grip");
+      pick("VO2max estimé (Rockport)","vo2");
+      render();
+      msg.innerHTML=' <b style="color:var(--n4)">✓ chargé</b>';
+    }catch(err){ msg.innerHTML=' <b style="color:var(--n0)">erreur de lecture</b>'; }
+  };
+  rd.readAsArrayBuffer(f);
+});
+</script>
+</body>
+</html>
