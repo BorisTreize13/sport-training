@@ -273,13 +273,15 @@ ul.li li{margin-bottom:5px;font-size:12.5px}
 
 /* ============ mobile ============ */
 @media (max-width:860px){
-  body{overflow:auto}
+  /* le document défile (et non body) : condition pour que position:fixed
+     reste ancré au bas de l'écran sur Android */
+  html,body{height:auto;min-height:100%;overflow:visible;overflow-x:hidden}
   .app{flex-direction:column;height:auto;min-height:100%}
   .sidebar{width:100%;flex:0 0 auto;border-right:none;border-bottom:1px solid var(--line);padding:10px 0 8px}
   .brand{padding:0 14px 9px}
   .brand .who{display:none}
   /* --- menu principal en barre basse, à portée de pouce --- */
-  .nav{position:fixed;left:0;right:0;bottom:0;z-index:60;
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:60;transform:translateZ(0);
     flex-direction:row;gap:0;padding:0 2px env(safe-area-inset-bottom);
     background:rgba(16,22,30,.97);backdrop-filter:blur(12px);
     border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.45)}
@@ -1807,7 +1809,7 @@ function renderHist(){
 renderHist();
 
 /* ================= installation / hors connexion ================= */
-const VERSION='v2 · 23/09';
+const VERSION='v3 · 23/09';
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
     reg.update();                                   // vérifie à chaque ouverture
