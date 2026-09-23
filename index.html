@@ -28,6 +28,7 @@ body{background:var(--bg);color:var(--txt);overflow:hidden;
   border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 0}
 .brand{padding:0 16px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
 .brand h1{font-size:16px;margin:0;font-weight:660;letter-spacing:-.3px}
+.brand h1 .ver{font-size:9.5px;font-weight:600;color:var(--dim);margin-left:7px;letter-spacing:.3px;vertical-align:middle}
 .brand .who{color:var(--dim);font-size:10.5px;margin-top:3px;line-height:1.35}
 
 .nav{padding:0 8px;display:flex;flex-direction:column;gap:2px}
@@ -1806,9 +1807,20 @@ function renderHist(){
 renderHist();
 
 /* ================= installation / hors connexion ================= */
+const VERSION='v2 · 23/09';
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    reg.update();                                   // vérifie à chaque ouverture
+    setInterval(()=>reg.update(),60*60*1000);
+  }).catch(()=>{});
+  let recharge=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!recharge){recharge=true;location.reload();}  // nouvelle version : on recharge
+  });
 }
+(function(){const b=document.querySelector('.brand h1');
+  if(b&&!b.querySelector('.ver')){const v=document.createElement('span');
+    v.className='ver';v.textContent=VERSION;b.appendChild(v);}})();
 
 /* ================= import du carnet ================= */
 document.getElementById('fx').addEventListener('change',ev=>{
