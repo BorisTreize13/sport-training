@@ -38,6 +38,7 @@ body{background:var(--bg);color:var(--txt);overflow:hidden;
   user-select:none;border-left:2px solid transparent}
 .nav a:hover{background:#1a222c;color:var(--txt)}
 .nav a.on{background:#1c2836;color:var(--txt);border-left-color:var(--accent)}
+.nav a .sh{display:none}
 .nav a .ic{width:16px;text-align:center;font-size:13px;opacity:.85;flex:0 0 16px}
 .nav a.on .ic{opacity:1;color:var(--accent)}
 
@@ -276,15 +277,30 @@ ul.li li{margin-bottom:5px;font-size:12.5px}
   .sidebar{width:100%;flex:0 0 auto;border-right:none;border-bottom:1px solid var(--line);padding:10px 0 8px}
   .brand{padding:0 14px 9px}
   .brand .who{display:none}
-  .nav{flex-direction:row;overflow-x:auto;gap:5px;padding:9px 12px 2px;-webkit-overflow-scrolling:touch}
+  /* --- menu principal en barre basse, à portée de pouce --- */
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:60;
+    flex-direction:row;gap:0;padding:0 2px env(safe-area-inset-bottom);
+    background:rgba(16,22,30,.97);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.45)}
   .nav .lab{display:none}
-  .nav a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;border-radius:7px;padding:8px 12px}
-  .nav a.on{border-bottom-color:var(--accent)}
-  .sfoot{margin-top:0;padding:9px 14px 0}
-  .topbar{height:auto;padding:6px 12px;gap:5px}
+  .nav a{flex:1 1 0;min-width:0;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;padding:9px 2px 8px;border-left:none;border-radius:0;background:none;
+    border-top:2px solid transparent;position:relative}
+  .nav a:hover{background:none}
+  .nav a.on{background:none;border-top-color:var(--accent);color:var(--accent)}
+  .nav a .ic{font-size:17px;width:auto;flex:none;opacity:.9}
+  .nav a .tx{display:none}
+  .nav a .sh{display:block;font-size:9.5px;font-weight:650;letter-spacing:-.1px;
+    line-height:1.1;text-align:center;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;max-width:100%}
+  .sfoot{display:none}
+  /* place pour la barre basse */
+  .body{padding-bottom:86px}
+  .topbar{position:sticky;top:0;z-index:40;height:auto;padding:6px 12px;gap:5px;
+    background:rgba(19,26,34,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .topbar .ttl{display:none}
   .tab{padding:8px 13px}
-  .body{overflow:visible;padding:12px 12px 30px}
+  .body{overflow:visible;padding:12px 12px 86px}
   .grid.g4,.grid.g3,.grid.g2{grid-template-columns:1fr}
   .exgrid{grid-template-columns:1fr}
   .livebar{position:static;flex-wrap:wrap;gap:9px;box-shadow:none}
@@ -322,15 +338,15 @@ ul.li li{margin-bottom:5px;font-size:12.5px}
 
     <nav class="nav">
       <div class="lab">Suivi</div>
-      <a class="on" data-v="etat"><span class="ic">◎</span>État actuel</a>
-      <a data-v="prog"><span class="ic">▤</span>Programme</a>
+      <a class="on" data-v="etat"><span class="ic">◎</span><span class="tx">État actuel</span><span class="sh">État</span></a>
+      <a data-v="prog"><span class="ic">▤</span><span class="tx">Programme</span><span class="sh">Programme</span></a>
       <div class="lab">Séance de la semaine</div>
-      <a data-v="seance"><span class="ic">▶</span>Séance — Full Body</a>
-      <a data-v="sansalle"><span class="ic">◆</span>15 min sans salle</a>
+      <a data-v="seance"><span class="ic">▶</span><span class="tx">Séance — Full Body</span><span class="sh">Séance</span></a>
+      <a data-v="sansalle"><span class="ic">◆</span><span class="tx">15 min sans salle</span><span class="sh">15 min</span></a>
       <div class="lab">Plus tard (phase 2)</div>
-      <a data-v="jour1"><span class="ic">▤</span>Upper A · 4 séances/sem.</a>
+      <a data-v="jour1"><span class="ic">▤</span><span class="tx">Upper A · 4 séances/sem.</span><span class="sh">Upper A</span></a>
       <div class="lab">Fond</div>
-      <a data-v="refs"><span class="ic">§</span>Références</a>
+      <a data-v="refs"><span class="ic">§</span><span class="tx">Références</span><span class="sh">Réf.</span></a>
     </nav>
 
     <div class="sfoot">
