@@ -275,7 +275,9 @@ ul.li li{margin-bottom:5px;font-size:12.5px}
 @media (max-width:860px){
   /* le document défile (et non body) : condition pour que position:fixed
      reste ancré au bas de l'écran sur Android */
-  html,body{height:auto;min-height:100%;overflow:visible;overflow-x:hidden}
+  html,body{height:auto;min-height:100%;overflow:visible}
+  body{overflow-x:clip}   /* clip, et non hidden : hidden ferait basculer l'axe Y en auto
+                             et recréerait un conteneur de défilement */
   .app{flex-direction:column;height:auto;min-height:100%}
   .sidebar{width:100%;flex:0 0 auto;border-right:none;border-bottom:1px solid var(--line);padding:10px 0 8px}
   .brand{padding:0 14px 9px}
@@ -1809,7 +1811,7 @@ function renderHist(){
 renderHist();
 
 /* ================= installation / hors connexion ================= */
-const VERSION='v3 · 23/09';
+const VERSION='v4 · 23/09';
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
     reg.update();                                   // vérifie à chaque ouverture
